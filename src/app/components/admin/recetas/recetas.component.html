@@ -1,0 +1,375 @@
+<app-navbar></app-navbar>
+
+<div class="min-h-screen bg-gray-50">
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Alertas -->
+    <div *ngIf="error" class="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
+      <div class="flex">
+        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/>
+        </svg>
+        <p class="ml-3 text-sm text-red-700">{{ error }}</p>
+      </div>
+    </div>
+
+    <div *ngIf="successMessage" class="mb-6 bg-green-50 border-l-4 border-green-400 p-4 rounded-md">
+      <div class="flex">
+        <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+        </svg>
+        <p class="ml-3 text-sm text-green-700">{{ successMessage }}</p>
+      </div>
+    </div>
+
+    <!-- Botón Nueva Receta -->
+    <div *ngIf="!mostrarFormulario" class="mb-6">
+      <button 
+        (click)="abrirFormulario()"
+        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nueva Receta
+      </button>
+    </div>
+
+    <!-- Formulario Nueva Receta -->
+    <div *ngIf="mostrarFormulario" class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <h2 class="text-xl font-bold text-gray-900 mb-6">Generar Nueva Receta Médica</h2>
+      
+      <form (ngSubmit)="guardarReceta()">
+        <!-- Selección de Cita -->
+        <div class="mb-6">
+          <label for="cita" class="block text-sm font-medium text-gray-700 mb-2">
+            Cita <span class="text-red-500">*</span>
+          </label>
+          <select 
+            id="cita" 
+            [(ngModel)]="recetaActual.cita_id" 
+            name="cita_id"
+            (change)="onCitaChange()"
+            required
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+            <option value="0">Seleccione una cita completada</option>
+            <option *ngFor="let cita of citasCompletadas" [value]="cita.id">
+              {{ cita.paciente_nombre }} - {{ formatearFecha(cita.fecha) }} {{ cita.hora }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Diagnóstico -->
+        <div class="mb-6">
+          <label for="diagnostico" class="block text-sm font-medium text-gray-700 mb-2">
+            Diagnóstico <span class="text-red-500">*</span>
+          </label>
+          <textarea 
+            id="diagnostico"
+            [(ngModel)]="recetaActual.diagnostico"
+            name="diagnostico"
+            rows="3"
+            required
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            placeholder="Describa el diagnóstico del paciente"></textarea>
+        </div>
+
+        <!-- Vigencia -->
+        <div class="mb-6">
+          <label for="vigencia" class="block text-sm font-medium text-gray-700 mb-2">
+            Vigencia (días)
+          </label>
+          <input 
+            type="number"
+            id="vigencia"
+            [(ngModel)]="recetaActual.vigencia_dias"
+            name="vigencia_dias"
+            min="1"
+            max="365"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+        </div>
+
+        <!-- Medicamentos -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Medicamentos Prescritos</h3>
+          
+          <!-- Lista de Medicamentos -->
+          <div *ngIf="recetaActual.medicamentos.length > 0" class="mb-6">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medicamento</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Presentación</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dosis</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Frecuencia</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duración</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vía</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr *ngFor="let med of recetaActual.medicamentos; let i = index">
+                    <td class="px-3 py-4 text-sm text-gray-900">{{ med.medicamento }}</td>
+                    <td class="px-3 py-4 text-sm text-gray-500">{{ med.presentacion }}</td>
+                    <td class="px-3 py-4 text-sm text-gray-500">{{ med.dosis }}</td>
+                    <td class="px-3 py-4 text-sm text-gray-500">{{ med.frecuencia }}</td>
+                    <td class="px-3 py-4 text-sm text-gray-500">{{ med.duracion }}</td>
+                    <td class="px-3 py-4 text-sm text-gray-500">{{ med.via_administracion }}</td>
+                    <td class="px-3 py-4 text-sm">
+                      <button 
+                        type="button" 
+                        (click)="eliminarMedicamento(i)" 
+                        class="text-red-600 hover:text-red-800 font-medium">
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Formulario Agregar Medicamento -->
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h4 class="text-sm font-semibold text-gray-700 mb-4">Agregar Medicamento</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Medicamento *</label>
+                <input 
+                  type="text"
+                  [(ngModel)]="nuevoMedicamento.medicamento"
+                  name="medicamento"
+                  [ngModelOptions]="{standalone: true}"
+                  class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Ej: Paracetamol">
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Presentación</label>
+                <select 
+                  [(ngModel)]="nuevoMedicamento.presentacion" 
+                  name="presentacion"
+                  [ngModelOptions]="{standalone: true}"
+                  class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                  <option value="">Seleccione</option>
+                  <option value="tabletas">Tabletas</option>
+                  <option value="cápsulas">Cápsulas</option>
+                  <option value="jarabe">Jarabe</option>
+                  <option value="suspensión">Suspensión</option>
+                  <option value="solución">Solución</option>
+                  <option value="inyectable">Inyectable</option>
+                  <option value="crema">Crema</option>
+                  <option value="ungüento">Ungüento</option>
+                  <option value="gel">Gel</option>
+                  <option value="gotas">Gotas</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Dosis *</label>
+                <input 
+                  type="text"
+                  [(ngModel)]="nuevoMedicamento.dosis"
+                  name="dosis"
+                  [ngModelOptions]="{standalone: true}"
+                  class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Ej: 500mg">
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Frecuencia *</label>
+                <input 
+                  type="text"
+                  [(ngModel)]="nuevoMedicamento.frecuencia"
+                  name="frecuencia"
+                  [ngModelOptions]="{standalone: true}"
+                  class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Ej: Cada 8 horas">
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Duración *</label>
+                <input 
+                  type="text"
+                  [(ngModel)]="nuevoMedicamento.duracion"
+                  name="duracion"
+                  [ngModelOptions]="{standalone: true}"
+                  class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Ej: 7 días">
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Cantidad</label>
+                <input 
+                  type="text"
+                  [(ngModel)]="nuevoMedicamento.cantidad"
+                  name="cantidad"
+                  [ngModelOptions]="{standalone: true}"
+                  class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Ej: 21 tabletas">
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Vía de Administración *</label>
+                <select 
+                  [(ngModel)]="nuevoMedicamento.via_administracion" 
+                  name="via_administracion"
+                  [ngModelOptions]="{standalone: true}"
+                  class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                  <option value="oral">Oral</option>
+                  <option value="sublingual">Sublingual</option>
+                  <option value="tópica">Tópica</option>
+                  <option value="intramuscular">Intramuscular</option>
+                  <option value="intravenosa">Intravenosa</option>
+                  <option value="subcutánea">Subcutánea</option>
+                  <option value="oftálmica">Oftálmica</option>
+                  <option value="ótica">Ótica</option>
+                  <option value="nasal">Nasal</option>
+                  <option value="rectal">Rectal</option>
+                </select>
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Indicaciones Especiales</label>
+                <input 
+                  type="text"
+                  [(ngModel)]="nuevoMedicamento.indicaciones_especiales"
+                  name="indicaciones_especiales"
+                  [ngModelOptions]="{standalone: true}"
+                  class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Ej: Tomar con alimentos">
+              </div>
+            </div>
+
+            <button 
+              type="button" 
+              (click)="agregarMedicamento()" 
+              class="mt-4 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Agregar Medicamento
+            </button>
+          </div>
+        </div>
+
+        <!-- Indicaciones Generales -->
+        <div class="mb-6">
+          <label for="indicaciones" class="block text-sm font-medium text-gray-700 mb-2">
+            Indicaciones Generales
+          </label>
+          <textarea 
+            id="indicaciones"
+            [(ngModel)]="recetaActual.indicaciones"
+            name="indicaciones"
+            rows="3"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            placeholder="Indicaciones adicionales para el paciente"></textarea>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button 
+            type="button" 
+            (click)="cerrarFormulario()" 
+            [disabled]="loading"
+            class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50">
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            [disabled]="loading || recetaActual.medicamentos.length === 0"
+            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg *ngIf="loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ loading ? 'Generando...' : 'Generar Receta' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Historial de Recetas -->
+    <div *ngIf="!mostrarFormulario" class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">Historial de Recetas</h2>
+      </div>
+
+      <div *ngIf="loading" class="p-8 text-center">
+        <div class="inline-flex items-center">
+          <svg class="animate-spin h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="ml-3 text-gray-600">Cargando recetas...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && recetas.length === 0" class="p-12 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <p class="mt-4 text-sm text-gray-500">No hay recetas generadas</p>
+      </div>
+
+      <div *ngIf="!loading && recetas.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Folio</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diagnóstico</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medicamentos</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let receta of recetas" class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-sm font-bold text-gray-900">{{ receta.folio }}</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-sm text-gray-900">{{ receta.paciente_nombre }}</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-sm text-gray-500">{{ formatearFecha(receta.fecha_emision!) }}</span>
+              </td>
+              <td class="px-6 py-4">
+                <span class="text-sm text-gray-500 line-clamp-2">{{ receta.diagnostico }}</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ receta.medicamentos?.length || 0 }} medicamento{{ (receta.medicamentos?.length || 0) !== 1 ? 's' : '' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex space-x-2">
+                  <button 
+                    (click)="descargarPDF(receta.id!)" 
+                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    title="Descargar PDF">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    PDF
+                  </button>
+                  <button 
+                    (click)="enviarPorWhatsApp(receta)" 
+                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    title="Enviar por WhatsApp">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    WhatsApp
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

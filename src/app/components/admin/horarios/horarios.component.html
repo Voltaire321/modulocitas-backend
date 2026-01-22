@@ -1,0 +1,170 @@
+<app-navbar></app-navbar>
+
+<div class="min-h-screen bg-gray-50">
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-6 flex justify-between items-center">
+      <div>
+        <h2 class="text-3xl font-bold text-gray-800">Configuración de Horarios</h2>
+        <p class="text-gray-600 mt-1">Define tus horarios de atención para cada día de la semana</p>
+      </div>
+      <button (click)="abrirFormulario()" class="btn-primary">
+        <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        Agregar Horario
+      </button>
+    </div>
+
+    <!-- Messages -->
+    <div *ngIf="successMessage" class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex justify-between items-center">
+      <span>{{ successMessage }}</span>
+      <button (click)="successMessage = null" class="text-green-700 hover:text-green-900">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+    </div>
+
+    <div *ngIf="error" class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex justify-between items-center">
+      <span>{{ error }}</span>
+      <button (click)="error = null" class="text-red-700 hover:text-red-900">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading && !mostrarFormulario" class="flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+
+    <!-- Lista de Horarios -->
+    <div *ngIf="!loading && horarios.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div *ngFor="let horario of horarios" class="card">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <h3 class="text-lg font-bold text-gray-800">{{ getDiaLabel(horario.dia_semana) }}</h3>
+            <p class="text-sm text-gray-600">{{ horario.hora_inicio.substring(0,5) }} - {{ horario.hora_fin.substring(0,5) }}</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button 
+              (click)="toggleActivo(horario)"
+              [class]="horario.activo ? 'text-green-600 hover:text-green-800' : 'text-gray-400 hover:text-gray-600'"
+              title="Activar/Desactivar">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Duración cita:</span>
+            <span class="font-medium">{{ horario.duracion_cita_minutos }} min</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Descanso:</span>
+            <span class="font-medium">{{ horario.tiempo_entre_citas_minutos }} min</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Estado:</span>
+            <span [class]="horario.activo ? 'text-green-600 font-medium' : 'text-gray-400'">
+              {{ horario.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-2">
+          <button (click)="editarHorario(horario)" class="btn-secondary text-sm">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Editar
+          </button>
+          <button (click)="eliminarHorario(horario)" class="text-red-600 hover:text-red-800 px-3 py-1 text-sm font-medium">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sin horarios -->
+    <div *ngIf="!loading && horarios.length === 0 && !mostrarFormulario" class="card text-center py-12">
+      <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <h3 class="text-xl font-bold text-gray-800 mb-2">No tienes horarios configurados</h3>
+      <p class="text-gray-600 mb-6">Comienza agregando tus horarios de atención</p>
+      <button (click)="abrirFormulario()" class="btn-primary">
+        Agregar Primer Horario
+      </button>
+    </div>
+
+    <!-- Formulario Modal -->
+    <div *ngIf="mostrarFormulario" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-bold text-gray-800">
+            {{ horarioEditando ? 'Editar Horario' : 'Nuevo Horario' }}
+          </h3>
+          <button (click)="cerrarFormulario()" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+
+        <form (ngSubmit)="guardarHorario()" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Día de la semana</label>
+            <select [(ngModel)]="nuevoHorario.dia_semana" name="dia_semana" class="input-field" required>
+              <option *ngFor="let dia of diasSemana" [value]="dia.value">{{ dia.label }}</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Hora inicio</label>
+              <input type="time" [(ngModel)]="nuevoHorario.hora_inicio" name="hora_inicio" class="input-field" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Hora fin</label>
+              <input type="time" [(ngModel)]="nuevoHorario.hora_fin" name="hora_fin" class="input-field" required>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Duración de cada cita (minutos)</label>
+            <input type="number" [(ngModel)]="nuevoHorario.duracion_cita_minutos" name="duracion" 
+                   class="input-field" min="10" max="180" step="5" required>
+            <p class="text-xs text-gray-500 mt-1">Entre 10 y 180 minutos</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tiempo de descanso entre citas (minutos)</label>
+            <input type="number" [(ngModel)]="nuevoHorario.tiempo_entre_citas_minutos" name="descanso" 
+                   class="input-field" min="0" max="60" step="5">
+            <p class="text-xs text-gray-500 mt-1">Opcional: 0-60 minutos</p>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <button type="button" (click)="cerrarFormulario()" class="btn-secondary">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="loading">
+              <span *ngIf="loading" class="inline-block animate-spin mr-2">⏳</span>
+              {{ horarioEditando ? 'Actualizar' : 'Crear' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

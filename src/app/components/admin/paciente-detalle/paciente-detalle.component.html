@@ -1,0 +1,710 @@
+<div class="detalle-container" *ngIf="datosCompletos">
+  <!-- Header -->
+  <div class="header-section fade-in">
+    <button (click)="volver()" class="btn-back">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+      </svg>
+      Volver
+    </button>
+
+    <div class="paciente-header">
+      <div class="avatar-grande">
+        {{ datosCompletos.paciente.nombre.charAt(0) }}{{ datosCompletos.paciente.apellido.charAt(0) }}
+      </div>
+      <div class="header-info">
+        <div class="flex items-center gap-3">
+          <h1 class="paciente-nombre-grande">{{ datosCompletos.paciente.nombre }} {{ datosCompletos.paciente.apellido }}</h1>
+          <span [class]="'badge-grande ' + getEstatusColor(datosCompletos.paciente.estatus)">
+            {{ datosCompletos.paciente.estatus || 'activo' }}
+          </span>
+        </div>
+        <div class="paciente-meta">
+          <span>{{ getEdad() }} años</span>
+          <span>•</span>
+          <span>{{ datosCompletos.paciente.genero || 'N/A' }}</span>
+          <span>•</span>
+          <span>ID: {{ datosCompletos.paciente.id }}</span>
+        </div>
+        <div class="etiquetas-container" *ngIf="datosCompletos.etiquetas && datosCompletos.etiquetas.length > 0">
+          <span *ngFor="let etiqueta of datosCompletos.etiquetas" 
+                class="etiqueta-chip"
+                [style.background-color]="etiqueta.color + '20'"
+                [style.border-color]="etiqueta.color"
+                [style.color]="etiqueta.color">
+            {{ etiqueta.etiqueta }}
+            <button (click)="quitarEtiqueta(etiqueta.etiqueta)" class="etiqueta-remove">×</button>
+          </span>
+          <button (click)="abrirModalEtiqueta()" class="etiqueta-add">+ Agregar</button>
+        </div>
+        <button *ngIf="!datosCompletos.etiquetas || datosCompletos.etiquetas.length === 0" (click)="abrirModalEtiqueta()" class="btn-etiqueta">
+          + Agregar Etiqueta
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container fade-in-delay">
+    <button [class.active]="tabActiva === 'general'" (click)="cambiarTab('general')" class="tab-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      </svg>
+      General
+    </button>
+    <button [class.active]="tabActiva === 'historial'" (click)="cambiarTab('historial')" class="tab-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      Historial
+    </button>
+    <button [class.active]="tabActiva === 'antecedentes'" (click)="cambiarTab('antecedentes')" class="tab-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+      </svg>
+      Antecedentes
+    </button>
+    <button [class.active]="tabActiva === 'documentos'" (click)="cambiarTab('documentos')" class="tab-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+      </svg>
+      Documentos
+    </button>
+    <button [class.active]="tabActiva === 'notas'" (click)="cambiarTab('notas')" class="tab-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+      </svg>
+      Notas
+    </button>
+    <button [class.active]="tabActiva === 'signos'" (click)="cambiarTab('signos')" class="tab-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+      </svg>
+      Signos Vitales
+    </button>
+    <button [class.active]="tabActiva === 'citas'" (click)="cambiarTab('citas')" class="tab-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+      </svg>
+      Citas
+    </button>
+  </div>
+
+  <!-- Contenido de tabs -->
+  <div class="tab-content fade-in-delay-2">
+    <!-- Tab General -->
+    <div *ngIf="tabActiva === 'general'" class="tab-panel">
+      <div class="info-grid">
+        <div class="info-card">
+          <h3 class="info-card-title">Información Personal</h3>
+          <div class="info-rows">
+            <div class="info-row">
+              <span class="info-label">Email:</span>
+              <span class="info-value">{{ datosCompletos.paciente.email }}</span>
+            </div>
+            <div class="info-row" *ngIf="datosCompletos.paciente.email_secundario">
+              <span class="info-label">Email Secundario:</span>
+              <span class="info-value">{{ datosCompletos.paciente.email_secundario }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Teléfono:</span>
+              <span class="info-value">{{ datosCompletos.paciente.telefono }}</span>
+            </div>
+            <div class="info-row" *ngIf="datosCompletos.paciente.fecha_nacimiento">
+              <span class="info-label">Fecha de Nacimiento:</span>
+              <span class="info-value">{{ datosCompletos.paciente.fecha_nacimiento | date:'dd/MM/yyyy' }} ({{ getEdad() }} años)</span>
+            </div>
+            <div class="info-row" *ngIf="datosCompletos.paciente.tipo_sangre">
+              <span class="info-label">Tipo de Sangre:</span>
+              <span class="info-value">{{ datosCompletos.paciente.tipo_sangre }}</span>
+            </div>
+            <div class="info-row" *ngIf="datosCompletos.paciente.ocupacion">
+              <span class="info-label">Ocupación:</span>
+              <span class="info-value">{{ datosCompletos.paciente.ocupacion }}</span>
+            </div>
+            <div class="info-row" *ngIf="datosCompletos.paciente.estado_civil">
+              <span class="info-label">Estado Civil:</span>
+              <span class="info-value">{{ datosCompletos.paciente.estado_civil }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3 class="info-card-title">Dirección</h3>
+          <div class="info-rows">
+            <div class="info-row" *ngIf="datosCompletos.paciente.direccion">
+              <span class="info-label">Dirección:</span>
+              <span class="info-value">{{ datosCompletos.paciente.direccion }}</span>
+            </div>
+            <div class="info-row" *ngIf="datosCompletos.paciente.ciudad">
+              <span class="info-label">Ciudad:</span>
+              <span class="info-value">{{ datosCompletos.paciente.ciudad }}</span>
+            </div>
+            <div class="info-row" *ngIf="datosCompletos.paciente.estado">
+              <span class="info-label">Estado:</span>
+              <span class="info-value">{{ datosCompletos.paciente.estado }}</span>
+            </div>
+            <div class="info-row" *ngIf="datosCompletos.paciente.codigo_postal">
+              <span class="info-label">Código Postal:</span>
+              <span class="info-value">{{ datosCompletos.paciente.codigo_postal }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3 class="info-card-title">Contacto de Emergencia</h3>
+          <div class="info-rows">
+            <div class="info-row" *ngIf="datosCompletos.paciente.contacto_emergencia_nombre">
+              <span class="info-label">Nombre:</span>
+              <span class="info-value">{{ datosCompletos.paciente.contacto_emergencia_nombre }}</span>
+            </div>
+            <div class="info-row" *ngIf="datosCompletos.paciente.contacto_emergencia_relacion">
+              <span class="info-label">Relación:</span>
+              <span class="info-value">{{ datosCompletos.paciente.contacto_emergencia_relacion }}</span>
+            </div>
+            <div class="info-row" *ngIf="datosCompletos.paciente.telefono_emergencia">
+              <span class="info-label">Teléfono:</span>
+              <span class="info-value">{{ datosCompletos.paciente.telefono_emergencia }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3 class="info-card-title">Seguro Médico</h3>
+          <div class="info-rows">
+            <div class="info-row" *ngIf="datosCompletos.paciente.seguro_medico">
+              <span class="info-label">Aseguradora:</span>
+              <span class="info-value">{{ datosCompletos.paciente.seguro_medico }}</span>
+            </div>
+            <div class="info-row" *ngIf="datosCompletos.paciente.numero_poliza">
+              <span class="info-label">Número de Póliza:</span>
+              <span class="info-value">{{ datosCompletos.paciente.numero_poliza }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card full-width" *ngIf="datosCompletos.paciente.notas_generales">
+        <h3 class="info-card-title">Notas Generales</h3>
+        <p class="notas-texto">{{ datosCompletos.paciente.notas_generales }}</p>
+      </div>
+    </div>
+
+    <!-- Tab Historial (Timeline) -->
+    <div *ngIf="tabActiva === 'historial'" class="tab-panel">
+      <button (click)="abrirModalHistorial()" class="btn-primary mb-4">+ Nueva Entrada</button>
+
+      <div class="timeline" *ngIf="datosCompletos.historial && datosCompletos.historial.length > 0">
+        <div *ngFor="let item of datosCompletos.historial" class="timeline-item">
+          <div class="timeline-marker">
+            <span class="timeline-icon">{{ getTipoIcon(item.tipo) }}</span>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div>
+                <h4 class="timeline-title">{{ item.titulo }}</h4>
+                <p class="timeline-date">{{ item.fecha | date:'dd/MM/yyyy' }}</p>
+              </div>
+              <span [class]="'badge ' + getEstatusColor(item.tipo)">{{ item.tipo }}</span>
+            </div>
+            <p class="timeline-description" *ngIf="item.descripcion">{{ item.descripcion }}</p>
+            <div class="timeline-details">
+              <div *ngIf="item.diagnostico" class="detail-item">
+                <strong>Diagnóstico:</strong> {{ item.diagnostico }}
+              </div>
+              <div *ngIf="item.tratamiento" class="detail-item">
+                <strong>Tratamiento:</strong> {{ item.tratamiento }}
+              </div>
+              <div *ngIf="item.medicamentos" class="detail-item">
+                <strong>Medicamentos:</strong> {{ item.medicamentos }}
+              </div>
+              <div *ngIf="item.observaciones" class="detail-item">
+                <strong>Observaciones:</strong> {{ item.observaciones }}
+              </div>
+            </div>
+            <div class="timeline-footer" *ngIf="item.medico_nombre">
+              <span class="medico-info">Dr. {{ item.medico_nombre }} {{ item.medico_apellido }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!datosCompletos.historial || datosCompletos.historial.length === 0" class="empty-state">
+        <p class="empty-text">No hay entradas en el historial médico</p>
+      </div>
+    </div>
+
+    <!-- Tab Antecedentes -->
+    <div *ngIf="tabActiva === 'antecedentes'" class="tab-panel">
+      <button (click)="abrirModalAntecedente()" class="btn-primary mb-4">+ Agregar Antecedente</button>
+
+      <div class="antecedentes-grid">
+        <div *ngFor="let categoria of ['personales', 'familiares', 'alergias', 'cirugias', 'cronico']" class="antecedente-categoria">
+          <h3 class="categoria-title">
+            {{ getTipoIcon(categoria) }} {{ categoria | titlecase }}
+          </h3>
+          <div class="antecedente-list">
+            <div *ngFor="let ant of getAntecedentesPorCategoria(categoria)" class="antecedente-item">
+              <div class="antecedente-header">
+                <strong>{{ ant.condicion }}</strong>
+                <span [class]="'badge-sm ' + getEstatusColor(ant.estado)">{{ ant.estado }}</span>
+              </div>
+              <p class="antecedente-desc" *ngIf="ant.descripcion">{{ ant.descripcion }}</p>
+              <p class="antecedente-fecha" *ngIf="ant.fecha_diagnostico">
+                Desde: {{ ant.fecha_diagnostico | date:'dd/MM/yyyy' }}
+              </p>
+              <p class="antecedente-tratamiento" *ngIf="ant.tratamiento_actual">
+                <strong>Tratamiento:</strong> {{ ant.tratamiento_actual }}
+              </p>
+            </div>
+            <p *ngIf="getAntecedentesPorCategoria(categoria).length === 0" class="empty-categoria">
+              Sin registros
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Documentos -->
+    <div *ngIf="tabActiva === 'documentos'" class="tab-panel">
+      <button (click)="abrirModalDocumento()" class="btn-primary mb-4">+ Subir Documento</button>
+
+      <div class="documentos-grid" *ngIf="datosCompletos.documentos && datosCompletos.documentos.length > 0">
+        <div *ngFor="let doc of datosCompletos.documentos" class="documento-card">
+          <div class="documento-icon">
+            <svg *ngIf="doc.tipo_mime?.includes('pdf')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="documento-icon-svg text-red-500">
+              <path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625z" />
+              <path d="M12.971 1.816A5.23 5.23 0 0114.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 013.434 1.279 9.768 9.768 0 00-6.963-6.963z" />
+            </svg>
+            <svg *ngIf="doc.tipo_mime?.includes('image')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="documento-icon-svg text-blue-500">
+              <path fill-rule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clip-rule="evenodd" />
+            </svg>
+            <svg *ngIf="doc.tipo_mime?.includes('word') || doc.tipo_mime?.includes('document')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="documento-icon-svg text-blue-600">
+              <path fill-rule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="documento-info">
+            <h4 class="documento-nombre">{{ doc.nombre_archivo }}</h4>
+            <p class="documento-tipo">{{ doc.tipo_documento }}</p>
+            <p class="documento-fecha">{{ doc.fecha_documento | date:'dd/MM/yyyy' }}</p>
+            <p class="documento-desc" *ngIf="doc.descripcion">{{ doc.descripcion }}</p>
+          </div>
+          <button (click)="descargarDocumento(doc.ruta_archivo, doc.nombre_archivo)" class="btn-documento">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="!datosCompletos.documentos || datosCompletos.documentos.length === 0" class="empty-state">
+        <p class="empty-text">No hay documentos adjuntos</p>
+      </div>
+    </div>
+
+    <!-- Tab Notas -->
+    <div *ngIf="tabActiva === 'notas'" class="tab-panel">
+      <button (click)="abrirModalNota()" class="btn-primary mb-4">+ Nueva Nota</button>
+
+      <div class="notas-list" *ngIf="datosCompletos.notas && datosCompletos.notas.length > 0">
+        <div *ngFor="let nota of datosCompletos.notas" class="nota-card">
+          <div class="nota-header">
+            <div>
+              <h4 class="nota-titulo">
+                <span *ngIf="nota.importante" class="nota-importante">⭐</span>
+                {{ nota.titulo }}
+              </h4>
+              <p class="nota-meta">{{ nota.fecha_nota | date:'dd/MM/yyyy HH:mm' }} - Dr. {{ nota.medico_nombre }}</p>
+            </div>
+            <div class="nota-badges">
+              <span [class]="'badge-sm ' + getEstatusColor(nota.tipo_nota)">{{ nota.tipo_nota }}</span>
+              <span *ngIf="nota.privada" class="badge-sm bg-red-100 text-red-800">Privada</span>
+            </div>
+          </div>
+          <p class="nota-contenido">{{ nota.contenido }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="!datosCompletos.notas || datosCompletos.notas.length === 0" class="empty-state">
+        <p class="empty-text">No hay notas clínicas</p>
+      </div>
+    </div>
+
+    <!-- Tab Signos Vitales -->
+    <div *ngIf="tabActiva === 'signos'" class="tab-panel">
+      <button (click)="abrirModalSignos()" class="btn-primary mb-4">+ Registrar Signos</button>
+
+      <div class="signos-list" *ngIf="datosCompletos.signosVitales && datosCompletos.signosVitales.length > 0">
+        <div *ngFor="let signo of datosCompletos.signosVitales" class="signo-card">
+          <div class="signo-fecha">
+            {{ signo.fecha_registro | date:'dd/MM/yyyy HH:mm' }}
+          </div>
+          <div class="signos-grid">
+            <div class="signo-item" *ngIf="signo.peso">
+              <span class="signo-label">Peso</span>
+              <span class="signo-valor">{{ signo.peso }} kg</span>
+            </div>
+            <div class="signo-item" *ngIf="signo.altura">
+              <span class="signo-label">Altura</span>
+              <span class="signo-valor">{{ signo.altura }} cm</span>
+            </div>
+            <div class="signo-item" *ngIf="signo.imc">
+              <span class="signo-label">IMC</span>
+              <span class="signo-valor">{{ signo.imc }}</span>
+            </div>
+            <div class="signo-item" *ngIf="signo.temperatura">
+              <span class="signo-label">Temperatura</span>
+              <span class="signo-valor">{{ signo.temperatura }} °C</span>
+            </div>
+            <div class="signo-item" *ngIf="signo.presion_sistolica && signo.presion_diastolica">
+              <span class="signo-label">Presión Arterial</span>
+              <span class="signo-valor">{{ signo.presion_sistolica }}/{{ signo.presion_diastolica }} mmHg</span>
+            </div>
+            <div class="signo-item" *ngIf="signo.frecuencia_cardiaca">
+              <span class="signo-label">Frecuencia Cardíaca</span>
+              <span class="signo-valor">{{ signo.frecuencia_cardiaca }} lpm</span>
+            </div>
+            <div class="signo-item" *ngIf="signo.frecuencia_respiratoria">
+              <span class="signo-label">Frecuencia Respiratoria</span>
+              <span class="signo-valor">{{ signo.frecuencia_respiratoria }} rpm</span>
+            </div>
+            <div class="signo-item" *ngIf="signo.saturacion_oxigeno">
+              <span class="signo-label">Saturación O₂</span>
+              <span class="signo-valor">{{ signo.saturacion_oxigeno }}%</span>
+            </div>
+            <div class="signo-item" *ngIf="signo.glucosa">
+              <span class="signo-label">Glucosa</span>
+              <span class="signo-valor">{{ signo.glucosa }} mg/dL</span>
+            </div>
+          </div>
+          <p class="signo-notas" *ngIf="signo.notas">{{ signo.notas }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="!datosCompletos.signosVitales || datosCompletos.signosVitales.length === 0" class="empty-state">
+        <p class="empty-text">No hay registros de signos vitales</p>
+      </div>
+    </div>
+
+    <!-- Tab Citas -->
+    <div *ngIf="tabActiva === 'citas'" class="tab-panel">
+      <a routerLink="/admin/citas" [queryParams]="{paciente: pacienteId}" class="btn-primary mb-4">+ Agendar Nueva Cita</a>
+
+      <div class="citas-list" *ngIf="datosCompletos.citas && datosCompletos.citas.length > 0">
+        <div *ngFor="let cita of datosCompletos.citas" class="cita-card">
+          <div class="cita-fecha-badge">
+            <div class="cita-dia">{{ cita.fecha | date:'dd' }}</div>
+            <div class="cita-mes">{{ cita.fecha | date:'MMM' }}</div>
+          </div>
+          <div class="cita-info">
+            <h4 class="cita-titulo">{{ cita.motivo || 'Consulta General' }}</h4>
+            <p class="cita-medico">Dr. {{ cita.medico_nombre }} {{ cita.medico_apellido }}</p>
+            <p class="cita-hora">{{ cita.hora_inicio }} - {{ cita.hora_fin }}</p>
+          </div>
+          <span [class]="'badge ' + getEstatusColor(cita.estado)">{{ cita.estado }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="!datosCompletos.citas || datosCompletos.citas.length === 0" class="empty-state">
+        <p class="empty-text">No hay citas registradas</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="cargando" class="loading-container">
+  <div class="spinner"></div>
+  <p class="loading-text">Cargando información del paciente...</p>
+</div>
+
+<!-- Modal Historial -->
+<div *ngIf="mostrarModalHistorial" class="modal-overlay" (click)="cerrarModalHistorial()">
+  <div class="modal-content-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Nueva Entrada - Historial Médico</h2>
+      <button (click)="cerrarModalHistorial()" class="modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select [(ngModel)]="nuevoHistorial.tipo" class="form-input">
+            <option value="consulta">Consulta</option>
+            <option value="diagnostico">Diagnóstico</option>
+            <option value="procedimiento">Procedimiento</option>
+            <option value="hospitalizacion">Hospitalización</option>
+            <option value="emergencia">Emergencia</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha</label>
+          <p-datepicker [(ngModel)]="nuevoHistorial.fecha" iconDisplay="input" dateFormat="dd/mm/yy" placeholder="Seleccionar fecha" class="w-full"></p-datepicker>
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Título</label>
+          <input type="text" [(ngModel)]="nuevoHistorial.titulo" class="form-input" placeholder="Ej: Consulta de control">
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Descripción</label>
+          <textarea [(ngModel)]="nuevoHistorial.descripcion" class="form-textarea" rows="3"></textarea>
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Diagnóstico</label>
+          <textarea [(ngModel)]="nuevoHistorial.diagnostico" class="form-textarea" rows="2"></textarea>
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Tratamiento</label>
+          <textarea [(ngModel)]="nuevoHistorial.tratamiento" class="form-textarea" rows="2"></textarea>
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Medicamentos</label>
+          <textarea [(ngModel)]="nuevoHistorial.medicamentos" class="form-textarea" rows="2"></textarea>
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Observaciones</label>
+          <textarea [(ngModel)]="nuevoHistorial.observaciones" class="form-textarea" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button (click)="cerrarModalHistorial()" class="btn-secondary">Cancelar</button>
+      <button (click)="guardarHistorial()" class="btn-primary">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Antecedente -->
+<div *ngIf="mostrarModalAntecedente" class="modal-overlay" (click)="cerrarModalAntecedente()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Agregar Antecedente</h2>
+      <button (click)="cerrarModalAntecedente()" class="modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Categoría</label>
+          <select [(ngModel)]="nuevoAntecedente.categoria" class="form-input">
+            <option value="personales">Personales</option>
+            <option value="familiares">Familiares</option>
+            <option value="alergias">Alergias</option>
+            <option value="cirugias">Cirugías</option>
+            <option value="cronico">Crónico</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select [(ngModel)]="nuevoAntecedente.estado" class="form-input">
+            <option value="activo">Activo</option>
+            <option value="controlado">Controlado</option>
+            <option value="resuelto">Resuelto</option>
+          </select>
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Condición</label>
+          <input type="text" [(ngModel)]="nuevoAntecedente.condicion" class="form-input" placeholder="Ej: Hipertensión">
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Descripción</label>
+          <textarea [(ngModel)]="nuevoAntecedente.descripcion" class="form-textarea" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha Diagnóstico</label>
+          <p-datepicker [(ngModel)]="nuevoAntecedente.fecha_diagnostico" iconDisplay="input" dateFormat="dd/mm/yy" placeholder="Seleccionar fecha" class="w-full"></p-datepicker>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tratamiento Actual</label>
+          <input type="text" [(ngModel)]="nuevoAntecedente.tratamiento_actual" class="form-input">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button (click)="cerrarModalAntecedente()" class="btn-secondary">Cancelar</button>
+      <button (click)="guardarAntecedente()" class="btn-primary">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Documento -->
+<div *ngIf="mostrarModalDocumento" class="modal-overlay" (click)="cerrarModalDocumento()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Subir Documento</h2>
+      <button (click)="cerrarModalDocumento()" class="modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group col-span-2">
+          <label class="form-label">Tipo de Documento</label>
+          <select [(ngModel)]="tipoDocumento" class="form-input">
+            <option value="estudio">Estudio</option>
+            <option value="receta">Receta</option>
+            <option value="resultado">Resultado</option>
+            <option value="radiografia">Radiografía</option>
+            <option value="consentimiento">Consentimiento</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Archivo</label>
+          <input type="file" (change)="onFileSelected($event)" class="form-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Descripción</label>
+          <textarea [(ngModel)]="descripcionDocumento" class="form-textarea" rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button (click)="cerrarModalDocumento()" class="btn-secondary">Cancelar</button>
+      <button (click)="subirDocumento()" class="btn-primary">Subir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nota -->
+<div *ngIf="mostrarModalNota" class="modal-overlay" (click)="cerrarModalNota()">
+  <div class="modal-content-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Nueva Nota Clínica</h2>
+      <button (click)="cerrarModalNota()" class="modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select [(ngModel)]="nuevaNota.tipo_nota" class="form-input">
+            <option value="evolucion">Evolución</option>
+            <option value="observacion">Observación</option>
+            <option value="seguimiento">Seguimiento</option>
+            <option value="administrativa">Administrativa</option>
+            <option value="recordatorio">Recordatorio</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <div class="flex items-center gap-4 mt-6">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="nuevaNota.importante" class="checkbox-input">
+              <span>Importante</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="nuevaNota.privada" class="checkbox-input">
+              <span>Privada</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Título</label>
+          <input type="text" [(ngModel)]="nuevaNota.titulo" class="form-input">
+        </div>
+        <div class="form-group col-span-2">
+          <label class="form-label">Contenido</label>
+          <textarea [(ngModel)]="nuevaNota.contenido" class="form-textarea" rows="6"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button (click)="cerrarModalNota()" class="btn-secondary">Cancelar</button>
+      <button (click)="guardarNota()" class="btn-primary">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Signos Vitales -->
+<div *ngIf="mostrarModalSignos" class="modal-overlay" (click)="cerrarModalSignos()">
+  <div class="modal-content-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Registrar Signos Vitales</h2>
+      <button (click)="cerrarModalSignos()" class="modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label class="form-label">Peso (kg)</label>
+          <input type="number" [(ngModel)]="nuevosSignos.peso" class="form-input" step="0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Altura (cm)</label>
+          <input type="number" [(ngModel)]="nuevosSignos.altura" class="form-input" step="0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">IMC</label>
+          <input type="text" [value]="calcularIMC()" class="form-input" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Temperatura (°C)</label>
+          <input type="number" [(ngModel)]="nuevosSignos.temperatura" class="form-input" step="0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Presión Sistólica</label>
+          <input type="number" [(ngModel)]="nuevosSignos.presion_sistolica" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Presión Diastólica</label>
+          <input type="number" [(ngModel)]="nuevosSignos.presion_diastolica" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Frecuencia Cardíaca</label>
+          <input type="number" [(ngModel)]="nuevosSignos.frecuencia_cardiaca" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Frecuencia Respiratoria</label>
+          <input type="number" [(ngModel)]="nuevosSignos.frecuencia_respiratoria" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Saturación O₂ (%)</label>
+          <input type="number" [(ngModel)]="nuevosSignos.saturacion_oxigeno" class="form-input">
+        </div>
+        <div class="form-group col-span-3">
+          <label class="form-label">Glucosa (mg/dL)</label>
+          <input type="number" [(ngModel)]="nuevosSignos.glucosa" class="form-input">
+        </div>
+        <div class="form-group col-span-3">
+          <label class="form-label">Notas</label>
+          <textarea [(ngModel)]="nuevosSignos.notas" class="form-textarea" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button (click)="cerrarModalSignos()" class="btn-secondary">Cancelar</button>
+      <button (click)="guardarSignos()" class="btn-primary">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Etiqueta -->
+<div *ngIf="mostrarModalEtiqueta" class="modal-overlay" (click)="cerrarModalEtiqueta()">
+  <div class="modal-content-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Agregar Etiqueta</h2>
+      <button (click)="cerrarModalEtiqueta()" class="modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre de la Etiqueta</label>
+        <input type="text" [(ngModel)]="nuevaEtiqueta.etiqueta" class="form-input" placeholder="Ej: Prioritario">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Color</label>
+        <div class="color-picker-container">
+          <div class="color-options">
+            <div 
+              *ngFor="let color of coloresPredefinidos" 
+              class="color-option" 
+              [style.background-color]="color.value"
+              [class.selected]="nuevaEtiqueta.color === color.value"
+              (click)="nuevaEtiqueta.color = color.value"
+              [title]="color.label">
+              <span *ngIf="nuevaEtiqueta.color === color.value" class="checkmark">✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button (click)="cerrarModalEtiqueta()" class="btn-secondary">Cancelar</button>
+      <button (click)="agregarEtiqueta()" class="btn-primary">Agregar</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,235 @@
+<app-navbar></app-navbar>
+
+<div class="min-h-screen bg-gray-50">
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6 flex justify-between items-center">
+      <div>
+        <h2 class="text-3xl font-bold text-gray-800">Gestión de Médicos</h2>
+        <p class="text-gray-600 mt-1">Administra los médicos del sistema</p>
+      </div>
+      <button (click)="abrirFormulario()" class="btn-primary" *ngIf="!mostrarFormulario">
+        <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        Nuevo Médico
+      </button>
+    </div>
+
+    <!-- Alertas -->
+    <div *ngIf="error" class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm">{{ error }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="successMessage" class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-md">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm">{{ successMessage }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div *ngIf="mostrarFormulario" class="card mb-8">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-800">
+          {{ medicoEditando ? 'Editar Médico' : 'Nuevo Médico' }}
+        </h3>
+        <button (click)="cerrarFormulario()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <form (ngSubmit)="guardarMedico()">
+        <div class="grid grid-cols-2 gap-6">
+          <div class="form-group">
+            <label for="nombre" class="form-label">Nombre *</label>
+            <input 
+              type="text" 
+              id="nombre" 
+              [(ngModel)]="nuevoMedico.nombre" 
+              name="nombre" 
+              required 
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label for="apellido" class="form-label">Apellido *</label>
+            <input 
+              type="text" 
+              id="apellido" 
+              [(ngModel)]="nuevoMedico.apellido" 
+              name="apellido" 
+              required 
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label for="especialidad" class="form-label">Especialidad *</label>
+            <input 
+              type="text" 
+              id="especialidad" 
+              [(ngModel)]="nuevoMedico.especialidad" 
+              name="especialidad" 
+              required 
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label for="cedula" class="form-label">Cédula Profesional</label>
+            <input 
+              type="text" 
+              id="cedula" 
+              [(ngModel)]="nuevoMedico.cedula_profesional" 
+              name="cedula" 
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email *</label>
+            <input 
+              type="email" 
+              id="email" 
+              [(ngModel)]="nuevoMedico.email" 
+              name="email" 
+              required 
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label for="telefono" class="form-label">Teléfono</label>
+            <input 
+              type="tel" 
+              id="telefono" 
+              [(ngModel)]="nuevoMedico.telefono" 
+              name="telefono" 
+              class="form-input">
+          </div>
+
+          <div class="form-group" *ngIf="!medicoEditando">
+            <label for="username" class="form-label">Usuario *</label>
+            <input 
+              type="text" 
+              id="username" 
+              [(ngModel)]="nuevoMedico.username" 
+              name="username" 
+              required 
+              class="form-input">
+          </div>
+
+          <div class="form-group" *ngIf="!medicoEditando">
+            <label for="password" class="form-label">Contraseña *</label>
+            <input 
+              type="password" 
+              id="password" 
+              [(ngModel)]="nuevoMedico.password" 
+              name="password" 
+              required 
+              class="form-input">
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+          <button type="button" (click)="cerrarFormulario()" class="btn-secondary" [disabled]="loading">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="loading">
+            {{ loading ? 'Guardando...' : (medicoEditando ? 'Actualizar' : 'Crear') }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Lista de Médicos -->
+    <div class="card" *ngIf="!mostrarFormulario">
+      <div *ngIf="loading" class="text-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+        <p class="text-gray-600 mt-4">Cargando médicos...</p>
+      </div>
+
+      <div *ngIf="!loading && medicos.length === 0" class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No hay médicos</h3>
+        <p class="mt-1 text-sm text-gray-500">Comienza agregando un nuevo médico.</p>
+      </div>
+
+      <div *ngIf="!loading && medicos.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Médico</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Especialidad</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacto</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cédula</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let medico of medicos" [class.opacity-50]="!medico.activo">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">
+                  Dr(a). {{ medico.nombre }} {{ medico.apellido }}
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">{{ medico.especialidad }}</div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-900">{{ medico.email }}</div>
+                <div class="text-sm text-gray-500" *ngIf="medico.telefono">{{ medico.telefono }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ medico.cedula_profesional || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span 
+                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                  [ngClass]="medico.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                  {{ medico.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button 
+                  (click)="editarMedico(medico)" 
+                  class="text-primary-600 hover:text-primary-900 mr-4"
+                  title="Editar">
+                  <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </button>
+                <button 
+                  (click)="toggleActivo(medico)" 
+                  [class]="medico.activo ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'"
+                  [title]="medico.activo ? 'Desactivar' : 'Activar'">
+                  <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path *ngIf="medico.activo" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    <path *ngIf="!medico.activo" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

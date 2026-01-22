@@ -1,0 +1,109 @@
+<nav class="bg-white shadow-sm border-b border-gray-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <!-- Logo/Dashboard -->
+      <div class="flex items-center">
+        <a routerLink="/admin/dashboard" class="text-xl font-bold text-gray-800 hover:text-primary-600 transition-colors">
+          Sistema de Citas
+        </a>
+      </div>
+        
+      <!-- Menu Links (Centrados) -->
+      <div class="flex-1 flex justify-center">
+        <div class="hidden md:flex items-center space-x-1">
+          <a 
+            routerLink="/admin/citas" 
+            routerLinkActive="text-primary-600 border-b-2 border-primary-600"
+            [routerLinkActiveOptions]="{exact: false}"
+            class="px-3 py-2 text-gray-600 hover:text-primary-600 font-medium transition-colors h-16 flex items-center"
+          >
+            Citas
+          </a>
+          <a 
+            routerLink="/admin/horarios" 
+            routerLinkActive="text-primary-600 border-b-2 border-primary-600"
+            [routerLinkActiveOptions]="{exact: false}"
+            class="px-3 py-2 text-gray-600 hover:text-primary-600 font-medium transition-colors h-16 flex items-center"
+          >
+            Horarios
+          </a>
+          <a 
+            *ngIf="isDoctor"
+            routerLink="/admin/recetas" 
+            routerLinkActive="text-primary-600 border-b-2 border-primary-600"
+            [routerLinkActiveOptions]="{exact: false}"
+            class="px-3 py-2 text-gray-600 hover:text-primary-600 font-medium transition-colors h-16 flex items-center"
+          >
+            Recetas
+          </a>
+          <a 
+            routerLink="/admin/pacientes" 
+            routerLinkActive="text-primary-600 border-b-2 border-primary-600"
+            [routerLinkActiveOptions]="{exact: false}"
+            class="px-3 py-2 text-gray-600 hover:text-primary-600 font-medium transition-colors h-16 flex items-center"
+          >
+            Pacientes
+          </a>
+          <a 
+            *ngIf="isSuperAdmin"
+            routerLink="/admin/medicos" 
+            routerLinkActive="text-primary-600 border-b-2 border-primary-600"
+            [routerLinkActiveOptions]="{exact: false}"
+            class="px-3 py-2 text-gray-600 hover:text-primary-600 font-medium transition-colors h-16 flex items-center"
+          >
+            Médicos
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Side: Notifications, User, Logout -->
+      <div class="flex items-center space-x-4">
+        <!-- Notificaciones Bell -->
+        <app-notificaciones-bell></app-notificaciones-bell>
+        
+        <div class="border-l border-gray-300 h-6"></div>
+        
+        <!-- User Profile - Clickeable para ir a perfil -->
+        <button 
+          (click)="goToProfile()"
+          class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors"
+        >
+          <!-- Avatar -->
+          <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-500 shadow-sm">
+            <img 
+              *ngIf="avatarUrl"
+              [src]="'http://localhost:3000' + avatarUrl" 
+              alt="Avatar"
+              class="w-full h-full object-cover"
+            />
+            <div 
+              *ngIf="!avatarUrl"
+              class="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold"
+            >
+              {{ currentUser?.nombre?.charAt(0) }}{{ currentUser?.apellido?.charAt(0) }}
+            </div>
+          </div>
+          
+          <!-- User Info -->
+          <div class="text-sm text-left hidden lg:block">
+            <div class="font-medium text-gray-800">{{ currentUser?.nombre }} {{ currentUser?.apellido }}</div>
+            <div class="text-gray-500 text-xs">{{ currentUser?.rol }}</div>
+          </div>
+        </button>
+        
+        <div class="border-l border-gray-300 h-6"></div>
+        
+        <!-- Logout -->
+        <button 
+          (click)="logout()" 
+          class="btn-secondary text-sm flex items-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+          Salir
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>

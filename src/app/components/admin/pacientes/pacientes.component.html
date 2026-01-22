@@ -1,0 +1,277 @@
+<app-navbar></app-navbar>
+
+<div class="pacientes-container">
+  <!-- Toast para notificaciones -->
+  <p-toast position="top-right"></p-toast>
+  
+  <!-- Header con estadísticas -->
+  <div class="header-section fade-in">
+    <div class="title-section">
+      <h1 class="title">Gestión de Pacientes</h1>
+      <p class="subtitle">Administra la información completa de tus pacientes</p>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon bg-gradient-blue">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3 class="stat-value">{{ estadisticas.total }}</h3>
+          <p class="stat-label">Total Pacientes</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon bg-gradient-green">
+          <span class="text-2xl">✓</span>
+        </div>
+        <div class="stat-content">
+          <h3 class="stat-value">{{ estadisticas.activos }}</h3>
+          <p class="stat-label">Activos</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon bg-gradient-yellow">
+          <span class="text-2xl">👁</span>
+        </div>
+        <div class="stat-content">
+          <h3 class="stat-value">{{ estadisticas.seguimiento }}</h3>
+          <p class="stat-label">En Seguimiento</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon bg-gradient-purple">
+          <span class="text-2xl">↑</span>
+        </div>
+        <div class="stat-content">
+          <h3 class="stat-value">{{ estadisticas.alta }}</h3>
+          <p class="stat-label">Alta Médica</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de búsqueda y filtros -->
+  <div class="filters-section fade-in-delay">
+    <div class="search-bar">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="search-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+      </svg>
+      <input 
+        type="text" 
+        [(ngModel)]="busqueda"
+        (input)="buscarPacientes()"
+        placeholder="Buscar por nombre, email o teléfono..."
+        class="search-input"
+      />
+    </div>
+
+    <select 
+      [(ngModel)]="estatusSeleccionado"
+      (change)="buscarPacientes()"
+      class="filter-select"
+    >
+      <option value="">Todos los estatus</option>
+      <option value="activo">Activo</option>
+      <option value="seguimiento">En Seguimiento</option>
+      <option value="alta">Alta Médica</option>
+      <option value="inactivo">Inactivo</option>
+    </select>
+
+    <button (click)="abrirModal()" class="btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      Nuevo Paciente
+    </button>
+  </div>
+
+  <!-- Tabla de pacientes -->
+  <div class="table-container fade-in-delay-2">
+    <div *ngIf="cargando" class="loading-state">
+      <div class="spinner"></div>
+      <p class="loading-text">Cargando pacientes...</p>
+    </div>
+
+    <div *ngIf="!cargando && pacientesFiltrados.length === 0" class="empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="empty-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      </svg>
+      <h3 class="empty-title">No se encontraron pacientes</h3>
+      <p class="empty-subtitle">Intenta ajustar los filtros o agrega un nuevo paciente</p>
+    </div>
+
+    <table *ngIf="!cargando && pacientesFiltrados.length > 0" class="pacientes-table">
+      <thead>
+        <tr>
+          <th>Paciente</th>
+          <th>Contacto</th>
+          <th>Estatus</th>
+          <th>Citas</th>
+          <th>Última Cita</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let paciente of pacientesFiltrados" class="table-row">
+          <td>
+            <div class="paciente-info">
+              <div class="avatar">
+                {{ paciente.nombre.charAt(0) }}{{ paciente.apellido.charAt(0) }}
+              </div>
+              <div class="paciente-datos">
+                <p class="paciente-nombre">{{ paciente.nombre }} {{ paciente.apellido }}</p>
+                <p class="paciente-detalle">ID: {{ paciente.id }}</p>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="contacto-info">
+              <p class="contacto-email">{{ paciente.email }}</p>
+              <p class="contacto-telefono">{{ paciente.telefono }}</p>
+            </div>
+          </td>
+          <td>
+            <div class="estatus-dropdown-wrapper">
+              <span 
+                [class]="'badge cursor-pointer hover:opacity-80 transition-opacity ' + getEstatusBadgeClass(paciente.estatus)"
+                (click)="mostrarMenuEstatus(paciente)">
+                {{ getEstatusTexto(paciente.estatus) }}
+              </span>
+              <div *ngIf="pacienteMenuEstatus === paciente.id" class="estatus-menu">
+                <button 
+                  *ngFor="let opcion of estatusOptions" 
+                  (click)="seleccionarEstatus(paciente, opcion.value)"
+                  [class]="'estatus-menu-item ' + (paciente.estatus === opcion.value ? 'active' : '')">
+                  {{ opcion.label }}
+                </button>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="citas-count">{{ paciente.total_citas || 0 }}</span>
+          </td>
+          <td>
+            <span class="fecha-cita">{{ paciente.ultima_cita ? (paciente.ultima_cita | date:'dd/MM/yyyy') : 'Sin citas' }}</span>
+          </td>
+          <td>
+            <button (click)="verDetalles(paciente)" class="btn-action">
+              Ver Perfil
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal de nuevo paciente -->
+<div *ngIf="mostrarModal" class="modal-overlay" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Nuevo Paciente</h2>
+      <button (click)="cerrarModal()" class="modal-close">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <p-floatlabel variant="on">
+            <input pInputText id="nombre" type="text" [(ngModel)]="pacienteActual.nombre" autocomplete="off" />
+            <label for="nombre">Nombre *</label>
+          </p-floatlabel>
+        </div>
+
+        <div class="form-group">
+          <p-floatlabel variant="on">
+            <input pInputText id="apellido" type="text" [(ngModel)]="pacienteActual.apellido" autocomplete="off" />
+            <label for="apellido">Apellido *</label>
+          </p-floatlabel>
+        </div>
+
+        <div class="form-group">
+          <p-floatlabel variant="on">
+            <input pInputText id="email" type="email" [(ngModel)]="pacienteActual.email" autocomplete="off" />
+            <label for="email">Email *</label>
+          </p-floatlabel>
+        </div>
+
+        <div class="form-group">
+          <p-floatlabel variant="on">
+            <input pInputText id="telefono" type="tel" [(ngModel)]="pacienteActual.telefono" autocomplete="off" />
+            <label for="telefono">Teléfono *</label>
+          </p-floatlabel>
+        </div>
+
+        <div class="form-group">
+          <p-floatlabel variant="on">
+            <p-datepicker 
+              inputId="fechaNacimiento"
+              [(ngModel)]="pacienteActual.fecha_nacimiento" 
+              [showIcon]="true"
+              iconDisplay="input"
+              dateFormat="dd/mm/yy"
+              [maxDate]="maxDate"
+              appendTo="body" />
+            <label for="fechaNacimiento">Fecha de Nacimiento</label>
+          </p-floatlabel>
+        </div>
+
+        <div class="form-group">
+          <p-floatlabel variant="on">
+            <p-select 
+              inputId="genero"
+              [options]="generoOptions" 
+              [(ngModel)]="pacienteActual.genero"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body" />
+            <label for="genero">Género</label>
+          </p-floatlabel>
+        </div>
+
+        <div class="form-group col-span-2">
+          <p-floatlabel variant="on">
+            <input pInputText id="direccion" type="text" [(ngModel)]="pacienteActual.direccion" autocomplete="off" />
+            <label for="direccion">Dirección</label>
+          </p-floatlabel>
+        </div>
+
+        <div class="form-group">
+          <p-floatlabel variant="on">
+            <input pInputText id="ciudad" type="text" [(ngModel)]="pacienteActual.ciudad" autocomplete="off" />
+            <label for="ciudad">Ciudad</label>
+          </p-floatlabel>
+        </div>
+
+        <div class="form-group">
+          <p-floatlabel variant="on">
+            <input pInputText id="estado" type="text" [(ngModel)]="pacienteActual.estado" autocomplete="off" />
+            <label for="estado">Estado</label>
+          </p-floatlabel>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button (click)="cerrarModal()" class="btn-secondary">Cancelar</button>
+      <button (click)="guardarPaciente()" class="btn-primary" [disabled]="cargando">
+        {{ cargando ? 'Guardando...' : 'Guardar Paciente' }}
+      </button>
+    </div>
+  </div>
+</div>
+

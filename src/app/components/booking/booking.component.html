@@ -1,0 +1,507 @@
+<div class="min-h-screen bg-gradient-to-br from-primary-50 via-white to-medical-50 py-8 px-4">
+  <div class="max-w-6xl mx-auto">
+    <!--Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-800 mb-2">Agendar Cita Médica</h1>
+      <p class="text-gray-600">Agenda tu consulta de forma rápida y sencilla</p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between max-w-3xl mx-auto">
+        <div class="flex flex-col items-center flex-1">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-all shadow-md" 
+               [ngClass]="paso >= 1 ? 'bg-primary-600 text-white scale-110' : 'bg-gray-200 text-gray-500'">
+            <span *ngIf="paso > 1">✓</span>
+            <span *ngIf="paso <= 1">1</span>
+          </div>
+          <span class="text-xs mt-2 font-medium" [ngClass]="paso >= 1 ? 'text-primary-600' : 'text-gray-500'">
+            Fecha
+          </span>
+        </div>
+        <div class="flex-1 h-1 -mx-2 transition-all" [ngClass]="paso >= 2 ? 'bg-primary-600' : 'bg-gray-200'"></div>
+        <div class="flex flex-col items-center flex-1">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-all shadow-md"
+               [ngClass]="paso >= 2 ? 'bg-primary-600 text-white scale-110' : 'bg-gray-200 text-gray-500'">
+            <span *ngIf="paso > 2">✓</span>
+            <span *ngIf="paso <= 2">2</span>
+          </div>
+          <span class="text-xs mt-2 font-medium" [ngClass]="paso >= 2 ? 'text-primary-600' : 'text-gray-500'">
+            Hora
+          </span>
+        </div>
+        <div class="flex-1 h-1 -mx-2 transition-all" [ngClass]="paso >= 3 ? 'bg-primary-600' : 'bg-gray-200'"></div>
+        <div class="flex flex-col items-center flex-1">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-all shadow-md"
+               [ngClass]="paso >= 3 ? 'bg-primary-600 text-white scale-110' : 'bg-gray-200 text-gray-500'">
+            <span *ngIf="paso > 3">✓</span>
+            <span *ngIf="paso <= 3">3</span>
+          </div>
+          <span class="text-xs mt-2 font-medium" [ngClass]="paso >= 3 ? 'text-primary-600' : 'text-gray-500'">
+            Datos del Paciente
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertas -->
+    <div *ngIf="error" class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-lg animate-fade-in shadow-md">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+        </svg>
+        <span class="font-medium">{{ error }}</span>
+      </div>
+    </div>
+
+    <div *ngIf="success" class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded-lg animate-fade-in shadow-md">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span class="font-medium">{{ success }}</span>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex flex-col justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-primary-600"></div>
+      <p class="mt-4 text-gray-600 font-medium">Cargando...</p>
+    </div>
+
+    <!-- Paso 1: Calendario y Hora -->
+    <div *ngIf="paso === 1 && !loading" class="card animate-fade-in">
+      <!-- Información del médico -->
+      <div *ngIf="medicoInfo" class="mb-6 p-6 bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl border-2 border-primary-200 shadow-md">
+        <div class="flex items-center">
+          <div class="w-16 h-16 rounded-full bg-primary-600 flex items-center justify-center text-white font-bold text-2xl mr-4 shadow-lg">
+            {{ medicoInfo.nombre.charAt(0) }}{{ medicoInfo.apellido.charAt(0) }}
+          </div>
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Tu cita será con:</p>
+            <p class="font-bold text-xl text-gray-800">{{ medicoInfo.nombre }} {{ medicoInfo.apellido }}</p>
+            <p class="text-primary-700 font-semibold text-sm mt-1 inline-block px-3 py-1 bg-white rounded-full">
+              {{ medicoInfo.especialidad }}
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <h2 class="text-2xl font-semibold text-gray-800 flex items-center mb-6">
+        <svg class="w-7 h-7 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        Selecciona Fecha y Hora
+      </h2>
+      
+      <!-- Calendario -->
+      <div class="max-w-2xl mx-auto">
+        <!-- Navegación del calendario -->
+        <div class="flex items-center justify-between mb-4">
+          <button (click)="mesAnterior()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <h3 class="text-xl font-bold text-gray-800">
+            {{ getNombreMes() }} {{ mesActual.getFullYear() }}
+          </h3>
+          <button (click)="mesSiguiente()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Días de la semana -->
+        <div class="grid grid-cols-7 gap-2 mb-2">
+          <div *ngFor="let dia of ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']" 
+               class="text-center text-sm font-semibold text-gray-600 py-2">
+            {{ dia }}
+          </div>
+        </div>
+        
+        <!-- Días del mes -->
+        <div class="grid grid-cols-7 gap-2">
+          <button *ngFor="let dia of diasMes"
+                  (click)="seleccionarFecha(dia)"
+                  [disabled]="dia.esPasado || dia.esOtroMes"
+                  [ngClass]="{
+                    'bg-primary-600 text-white shadow-lg scale-110 font-bold': dia.esSeleccionado && !dia.esPasado,
+                    'bg-white border-2 border-primary-300 text-gray-800 hover:bg-primary-50 hover:border-primary-500': !dia.esSeleccionado && !dia.esPasado && !dia.esOtroMes,
+                    'bg-gray-100 text-gray-400 cursor-not-allowed': dia.esPasado || dia.esOtroMes,
+                    'border-2 border-blue-400': dia.esHoy && !dia.esPasado
+                  }"
+                  class="aspect-square flex items-center justify-center rounded-lg transition-all duration-200 text-sm font-medium">
+            {{ dia.fecha.getDate() }}
+          </button>
+        </div>
+        
+        <div class="mt-4 flex items-center justify-center space-x-4 text-sm text-gray-600">
+          <div class="flex items-center">
+            <div class="w-4 h-4 border-2 border-blue-400 rounded mr-2"></div>
+            <span>Hoy</span>
+          </div>
+          <div class="flex items-center">
+            <div class="w-4 h-4 bg-primary-600 rounded mr-2"></div>
+            <span>Seleccionado</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paso 2: Selección de Hora -->
+    <div *ngIf="paso === 2 && !loading" class="card animate-fade-in">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-semibold text-gray-800 flex items-center">
+          <svg class="w-7 h-7 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Selecciona la Hora
+        </h2>
+        <button (click)="volverPaso(1)" class="text-primary-600 hover:text-primary-700 font-medium flex items-center">
+          <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Cambiar Fecha
+        </button>
+      </div>
+
+      <!-- Resumen de fecha seleccionada -->
+      <div class="mb-6 p-4 bg-gradient-to-r from-primary-50 to-blue-50 rounded-lg border border-primary-200">
+        <p class="text-sm text-gray-600 mb-1">Fecha seleccionada:</p>
+        <p class="font-bold text-lg text-gray-800">{{ formatearFechaLegible(fechaSeleccionada) }}</p>
+      </div>
+
+      <div *ngIf="slots.length === 0" class="text-center py-12">
+        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-gray-500 text-lg font-medium">No hay horarios disponibles</p>
+        <p class="text-gray-400 mt-2">Intenta seleccionar otra fecha</p>
+        <button (click)="volverPaso(1)" class="mt-4 btn-primary">
+          Seleccionar otra fecha
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <button *ngFor="let slot of slots"
+                (click)="seleccionarSlot(slot)"
+                class="p-4 border-2 rounded-xl transition-all duration-200 hover:shadow-lg group"
+                [ngClass]="slotSeleccionado === slot ? 
+                  'border-primary-600 bg-primary-50 shadow-md' : 
+                  'border-gray-200 hover:border-primary-400 bg-white'">
+          <div class="text-center">
+            <svg class="w-6 h-6 mx-auto mb-2" 
+                 [ngClass]="slotSeleccionado === slot ? 'text-primary-600' : 'text-gray-400 group-hover:text-primary-500'"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="font-bold text-lg"
+               [ngClass]="slotSeleccionado === slot ? 'text-primary-600' : 'text-gray-800'">
+              {{ formatearHora(slot.hora_inicio) }}
+            </p>
+            <p class="text-xs text-gray-500 mt-1">
+              {{ formatearHora(slot.hora_fin) }}
+            </p>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Paso 3: Formulario de Datos del Paciente -->
+    <div *ngIf="paso === 3 && !loading" class="card animate-fade-in">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-semibold text-gray-800 flex items-center">
+          <svg class="w-7 h-7 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Tus Datos Personales
+        </h2>
+        <button (click)="volverPaso(2)" class="text-primary-600 hover:text-primary-700 font-medium flex items-center">
+          <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Cambiar Hora
+        </button>
+      </div>
+      
+      <!-- Resumen completo -->
+      <div class="mb-6 p-5 bg-gradient-to-br from-primary-50 via-blue-50 to-indigo-50 rounded-xl border-2 border-primary-200 shadow-sm">
+        <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+          </svg>
+          Resumen de tu cita
+        </h3>
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="bg-white p-3 rounded-lg shadow-sm">
+            <p class="text-xs text-gray-500 mb-1">Médico</p>
+            <p class="font-semibold text-gray-800">{{ medicoInfo!.nombre }} {{ medicoInfo!.apellido }}</p>
+            <p class="text-sm text-primary-600">{{ medicoInfo!.especialidad }}</p>
+          </div>
+          <div class="bg-white p-3 rounded-lg shadow-sm">
+            <p class="text-xs text-gray-500 mb-1">Fecha</p>
+            <p class="font-semibold text-gray-800">{{ formatearFechaLegible(fechaSeleccionada) }}</p>
+            <p class="text-sm text-gray-600">{{ mesActual.getFullYear() }}</p>
+          </div>
+          <div class="bg-white p-3 rounded-lg shadow-sm">
+            <p class="text-xs text-gray-500 mb-1">Horario</p>
+            <p class="font-semibold text-gray-800">{{ formatearHora(slotSeleccionado!.hora_inicio) }}</p>
+            <p class="text-sm text-gray-600">a {{ formatearHora(slotSeleccionado!.hora_fin) }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <form class="space-y-5">
+        <div class="grid md:grid-cols-2 gap-5">
+          <!-- Nombre -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Nombre <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              [(ngModel)]="formulario.nombre"
+              (blur)="validarCampo('nombre')"
+              name="nombre"
+              placeholder="Ej: Juan"
+              class="input-field w-full"
+              [ngClass]="{'border-red-500 bg-red-50': erroresFormulario.nombre}">
+            <p *ngIf="erroresFormulario.nombre" class="mt-1 text-sm text-red-600 flex items-center">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              {{ erroresFormulario.nombre }}
+            </p>
+          </div>
+          
+          <!-- Apellido -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Apellido <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              [(ngModel)]="formulario.apellido"
+              (blur)="validarCampo('apellido')"
+              name="apellido"
+              placeholder="Ej: Pérez"
+              class="input-field w-full"
+              [ngClass]="{'border-red-500 bg-red-50': erroresFormulario.apellido}">
+            <p *ngIf="erroresFormulario.apellido" class="mt-1 text-sm text-red-600 flex items-center">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              {{ erroresFormulario.apellido }}
+            </p>
+          </div>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-5">
+          <!-- Teléfono -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Teléfono <span class="text-red-500">*</span>
+            </label>
+            <div class="flex gap-2">
+              <input 
+                type="tel" 
+                [(ngModel)]="formulario.telefono"
+                (blur)="validarCampo('telefono')"
+                name="telefono"
+                placeholder="10 dígitos"
+                maxlength="10"
+                class="input-field flex-1"
+                [ngClass]="{'border-red-500 bg-red-50': erroresFormulario.telefono}"
+                [disabled]="telefonoVerificado">
+              <button 
+                type="button"
+                *ngIf="!telefonoVerificado"
+                (click)="enviarCodigoVerificacion()"
+                [disabled]="formulario.telefono.length !== 10 || enviandoCodigo"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap transition-colors">
+                {{ enviandoCodigo ? 'Enviando...' : 'Verificar' }}
+              </button>
+              <span 
+                *ngIf="telefonoVerificado"
+                class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg">
+                <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                Verificado
+              </span>
+            </div>
+            <p *ngIf="erroresFormulario.telefono" class="mt-1 text-sm text-red-600 flex items-center">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              {{ erroresFormulario.telefono }}
+            </p>
+            
+            <!-- Input de código de verificación -->
+            <div *ngIf="mostrarInputCodigo && !telefonoVerificado" class="mt-3 animate-fade-in">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Código de Verificación (6 dígitos)
+              </label>
+              <div class="flex gap-2">
+                <input 
+                  type="text" 
+                  [(ngModel)]="codigoVerificacion"
+                  name="codigoVerificacion"
+                  placeholder="000000"
+                  maxlength="6"
+                  class="input-field flex-1">
+                <button 
+                  type="button"
+                  (click)="verificarCodigoIngresado()"
+                  [disabled]="codigoVerificacion.length !== 6 || verificandoCodigo"
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap transition-colors">
+                  {{ verificandoCodigo ? 'Verificando...' : 'Confirmar' }}
+                </button>
+              </div>
+              <p class="mt-2 text-xs text-gray-600">
+                Tiempo restante: <span class="font-semibold">{{ formatearTiempo() }}</span>
+              </p>
+              <p *ngIf="tiempoRestante > 240" class="mt-1 text-xs text-gray-500">
+                Podrás solicitar un nuevo código en {{ minutosParaReenviar() }} minuto(s)
+              </p>
+              <button 
+                *ngIf="tiempoRestante <= 240 && tiempoRestante > 0"
+                type="button"
+                (click)="enviarCodigoVerificacion()"
+                class="mt-2 text-sm text-blue-600 hover:text-blue-800 underline">
+                Reenviar código
+              </button>
+            </div>
+            
+            <!-- Mensajes de verificación -->
+            <p *ngIf="mensajeVerificacion" 
+               class="mt-2 text-sm"
+               [ngClass]="{
+                 'text-green-600': mensajeVerificacion.includes('✅'),
+                 'text-red-600': mensajeVerificacion.includes('❌'),
+                 'text-yellow-600': mensajeVerificacion.includes('⚠️')
+               }">
+              {{ mensajeVerificacion }}
+            </p>
+          </div>
+          
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Email <span class="text-gray-400 text-xs">(opcional)</span>
+            </label>
+            <input 
+              type="email" 
+              [(ngModel)]="formulario.email"
+              (blur)="validarCampo('email')"
+              name="email"
+              placeholder="correo@ejemplo.com"
+              class="input-field w-full"
+              [ngClass]="{'border-red-500 bg-red-50': erroresFormulario.email}">
+            <p *ngIf="erroresFormulario.email" class="mt-1 text-sm text-red-600 flex items-center">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              {{ erroresFormulario.email }}
+            </p>
+          </div>
+        </div>
+        
+        <!-- Motivo de Consulta -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            Motivo de la consulta <span class="text-gray-400 text-xs">(opcional)</span>
+          </label>
+          <textarea 
+            [(ngModel)]="formulario.motivoConsulta"
+            name="motivoConsulta"
+            rows="3"
+            placeholder="Describe brevemente el motivo de tu consulta..."
+            class="input-field w-full resize-none"></textarea>
+        </div>
+        
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p class="text-sm text-gray-700 flex items-start">
+            <svg class="w-5 h-5 mr-2 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <span>Los campos marcados con <span class="text-red-500 font-semibold">*</span> son obligatorios. Tu información está protegida y solo será utilizada para gestionar tu cita.</span>
+          </p>
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="button" (click)="volverPaso(2)" class="btn-secondary">
+            Volver
+          </button>
+          <button type="button" (click)="agendarCita()" class="btn-primary px-8">
+            Confirmar Cita
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Paso 4: Confirmación -->
+    <div *ngIf="paso === 4" class="animate-fade-in">
+      <div class="card text-center py-12">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        
+        <h2 class="text-3xl font-bold text-gray-800 mb-3">¡Cita Agendada Exitosamente!</h2>
+        <p class="text-gray-600 mb-6">Hemos enviado los detalles de tu cita a tu WhatsApp</p>
+        
+        <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 max-w-md mx-auto mb-6 border-2 border-green-200">
+          <svg class="w-16 h-16 mx-auto text-green-600 mb-3" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+          </svg>
+          <p class="text-lg font-semibold text-gray-800 mb-2">Revisa tu WhatsApp</p>
+          <p class="text-sm text-gray-600">Te hemos enviado un mensaje con todos los detalles de tu cita</p>
+        </div>
+        
+        <div class="max-w-lg mx-auto mb-8 text-left bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <h3 class="font-semibold text-gray-800 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+            </svg>
+            Detalles de tu cita
+          </h3>
+          <div class="space-y-3">
+            <div class="flex justify-between py-2 border-b border-gray-100">
+              <span class="text-gray-600">Médico:</span>
+              <span class="font-semibold text-gray-800">{{ medicoInfo!.nombre }} {{ medicoInfo!.apellido }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-100">
+              <span class="text-gray-600">Especialidad:</span>
+              <span class="font-semibold text-gray-800">{{ medicoInfo!.especialidad }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-100">
+              <span class="text-gray-600">Fecha:</span>
+              <span class="font-semibold text-gray-800">{{ formatearFechaLegible(fechaSeleccionada) }} {{ mesActual.getFullYear() }}</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span class="text-gray-600">Horario:</span>
+              <span class="font-semibold text-gray-800">{{ formatearHora(slotSeleccionado!.hora_inicio) }} - {{ formatearHora(slotSeleccionado!.hora_fin) }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-lg mx-auto mb-6">
+          <p class="text-sm text-gray-700 flex items-start">
+            <svg class="w-5 h-5 mr-2 text-yellow-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            <span class="font-medium">Tu cita está en estado <span class="text-yellow-700">PENDIENTE</span>. El médico la confirmará próximamente. Recibirás una notificación.</span>
+          </p>
+        </div>
+        
+        <button (click)="reiniciar()" class="btn-primary px-8 text-lg">
+          Agendar Otra Cita
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

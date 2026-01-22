@@ -1,1 +1,667 @@
-/* You can add global styles to this file, and also import other style files */
+/* Fuentes personalizadas */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   PROTECCIÓN Y ESTILOS PRIMENG
+   ============================================ */
+
+/* CRITICAL: Prevenir que Tailwind resetee PrimeNG */
+@layer base {
+  .p-component,
+  .p-inputtext,
+  .p-dropdown,
+  .p-calendar,
+  .p-colorpicker {
+    border-width: initial;
+    border-style: initial;
+    border-color: initial;
+  }
+}
+
+/* ============================================
+   ESTILOS FORZADOS PARA INPUTS PRIMENG
+   ============================================ */
+
+/* InputText - Forzar estilos visibles */
+.p-inputtext {
+  display: block !important;
+  width: 100% !important;
+  padding: 0.625rem 0.75rem !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  color: #495057 !important;
+  background-color: #ffffff !important;
+  background-clip: padding-box !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.p-inputtext:enabled:hover {
+  border-color: #3b82f6 !important;
+}
+
+.p-inputtext:enabled:focus {
+  outline: 0 none !important;
+  outline-offset: 0 !important;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+  border-color: #3b82f6 !important;
+}
+
+.p-inputtext::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Dropdown - Estilos completos */
+.p-dropdown {
+  display: inline-flex !important;
+  cursor: pointer !important;
+  position: relative !important;
+  user-select: none !important;
+  background: #ffffff !important;
+  border: 1px solid #ced4da !important;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s !important;
+  border-radius: 0.375rem !important;
+  width: 100% !important;  min-height: 2.75rem !important;}
+
+.p-dropdown:not(.p-disabled):hover {
+  border-color: #3b82f6 !important;
+}
+
+.p-dropdown:not(.p-disabled).p-focus {
+  outline: 0 none !important;
+  outline-offset: 0 !important;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+  border-color: #3b82f6 !important;
+}
+
+.p-dropdown .p-dropdown-label {
+  display: flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  flex: 1 1 auto !important;
+  width: 1% !important;
+  text-overflow: ellipsis !important;
+  cursor: pointer !important;
+  padding: 0.625rem 0.75rem !important;
+  background: transparent !important;
+  border: 0 none !important;
+  color: #495057 !important;
+  min-height: 2.5rem !important;
+}
+
+.p-dropdown .p-dropdown-label.p-placeholder {
+  color: #6c757d !important;
+}
+
+.p-dropdown .p-dropdown-trigger {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  background: transparent !important;
+  color: #6c757d !important;
+  width: 2.5rem !important;
+  border-top-right-radius: 0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+}
+
+.p-dropdown-panel {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  margin-top: 0.25rem !important;
+  background: #ffffff !important;
+  color: #495057 !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15) !important;
+  z-index: 1100 !important;
+  min-width: 12rem !important;
+}
+
+.p-dropdown-items-wrapper {
+  overflow: auto !important;
+}
+
+.p-dropdown-items {
+  margin: 0 !important;
+  padding: 0.5rem 0 !important;
+  list-style-type: none !important;
+}
+
+.p-dropdown-item {
+  cursor: pointer !important;
+  font-weight: normal !important;
+  white-space: nowrap !important;
+  position: relative !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0.625rem 1rem !important;
+  border: 0 none !important;
+  color: #495057 !important;
+  background: transparent !important;
+  transition: box-shadow 0.2s !important;
+  border-radius: 0 !important;
+}
+
+.p-dropdown-item:not(.p-highlight):not(.p-disabled):hover {
+  color: #495057 !important;
+  background: #e9ecef !important;
+}
+
+.p-dropdown-item.p-highlight {
+  color: #ffffff !important;
+  background: #3b82f6 !important;
+}
+
+.p-dropdown-item.p-focus {
+  color: #495057 !important;
+  background: #dee2e6 !important;
+}
+
+/* Calendar - Estilos completos */
+.p-calendar {
+  position: relative !important;
+  display: inline-flex !important;
+  width: 100% !important;
+}
+
+.p-calendar .p-inputtext {
+  flex: 1 1 auto !important;
+  width: 1% !important;
+}
+
+.p-calendar-w-btn .p-inputtext {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: 0 none !important;
+}
+
+.p-calendar-w-btn .p-datepicker-trigger {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  width: 2.5rem !important;
+  border: 1px solid #ced4da !important;
+  border-left: 0 none !important;
+  background: #e9ecef !important;
+  color: #495057 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.p-calendar-w-btn .p-datepicker-trigger:hover {
+  background: #dee2e6 !important;
+  border-color: #ced4da !important;
+  color: #495057 !important;
+}
+
+.p-datepicker {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  margin-top: 0.25rem !important;
+  background: #ffffff !important;
+  color: #495057 !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15) !important;
+  z-index: 1100 !important;
+  padding: 0.5rem !important;
+  min-width: auto !important;
+  width: max-content !important;
+}
+
+.p-datepicker:not(.p-datepicker-inline) {
+  background: #ffffff !important;
+  border: 1px solid #ced4da !important;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.p-datepicker .p-datepicker-header {
+  padding: 0.375rem !important;
+  color: #495057 !important;
+  background: #ffffff !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+  border-bottom: 1px solid #dee2e6 !important;
+  border-top-right-radius: 0.375rem !important;
+  border-top-left-radius: 0.375rem !important;
+  font-size: 0.875rem !important;
+}
+
+.p-datepicker .p-datepicker-header .p-datepicker-prev,
+.p-datepicker .p-datepicker-header .p-datepicker-next {
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  color: #6c757d !important;
+  border: 0 none !important;
+  background: transparent !important;
+  border-radius: 50% !important;
+  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s !important;
+  cursor: pointer !important;
+}
+
+.p-datepicker .p-datepicker-header .p-datepicker-prev:hover,
+.p-datepicker .p-datepicker-header .p-datepicker-next:hover {
+  color: #495057 !important;
+  border-color: transparent !important;
+  background: #e9ecef !important;
+}
+
+.p-datepicker table {
+  font-size: 0.875rem !important;
+  margin: 0.5rem 0 !important;
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+
+.p-datepicker table th {
+  padding: 0.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+}
+
+.p-datepicker table td {
+  padding: 0.125rem !important;
+}
+
+.p-datepicker table td > span {
+  width: 2rem !important;
+  height: 2rem !important;
+  border-radius: 50% !important;
+  transition: box-shadow 0.2s !important;
+  border: 1px solid transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  margin: 0 auto !important;
+  font-size: 0.875rem !important;
+}
+
+.p-datepicker table td > span:hover {
+  background: #e9ecef !important;
+}
+
+.p-datepicker table td > span.p-highlight {
+  color: #ffffff !important;
+  background: #3b82f6 !important;
+}
+
+.p-datepicker table td.p-datepicker-today > span {
+  background: #dee2e6 !important;
+  color: #495057 !important;
+}
+
+.p-datepicker table td.p-datepicker-today > span.p-highlight {
+  color: #ffffff !important;
+  background: #3b82f6 !important;
+}
+
+/* ColorPicker - Estilos completos */
+.p-colorpicker {
+  display: inline-block !important;
+}
+
+.p-colorpicker-preview {
+  width: 2rem !important;
+  height: 2rem !important;
+  padding: 0 !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem !important;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s !important;
+  cursor: pointer !important;
+}
+
+.p-colorpicker-preview:hover {
+  border-color: #3b82f6 !important;
+}
+
+.p-colorpicker-panel {
+  background: #ffffff !important;
+  border: 1px solid #ced4da !important;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15) !important;
+  border-radius: 0.375rem !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 9999 !important;
+}
+
+.p-colorpicker-panel .p-colorpicker-content {
+  padding: 0.5rem !important;
+}
+
+/* FloatLabel - variant="in" */
+.p-float-label {
+  display: block !important;
+  position: relative !important;
+}
+
+.p-float-label label {
+  position: absolute !important;
+  pointer-events: none !important;
+  top: 50% !important;
+  left: 0.75rem !important;
+  margin-top: -0.5rem !important;
+  transition-property: all !important;
+  transition-timing-function: ease !important;
+  transition-duration: 0.2s !important;
+  line-height: 1 !important;
+  color: #6c757d !important;
+}
+
+.p-float-label input:focus ~ label,
+.p-float-label input.p-filled ~ label,
+.p-float-label .p-inputwrapper-focus ~ label,
+.p-float-label .p-inputwrapper-filled ~ label,
+.p-float-label textarea:focus ~ label,
+.p-float-label textarea.p-filled ~ label,
+.p-float-label .p-datepicker:focus ~ label,
+.p-float-label .p-datepicker.p-filled ~ label,
+.p-float-label .p-dropdown:focus ~ label,
+.p-float-label .p-dropdown.p-filled ~ label {
+  top: 0.5rem !important;
+  font-size: 12px !important;
+  color: #3b82f6 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* Toast personalizado */
+.p-toast {
+  opacity: 0.95 !important;
+}
+
+.p-toast-message {
+  margin: 0 0 1rem 0 !important;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1) !important;
+  border-radius: 0.375rem !important;
+}
+
+.p-toast-message-content {
+  padding: 1rem !important;
+  border-width: 0 0 0 4px !important;
+}
+
+.p-toast-message-success {
+  background: #f0fdf4 !important;
+  border-color: #22c55e !important;
+  color: #166534 !important;
+}
+
+.p-toast-message-success .p-toast-message-icon {
+  color: #22c55e !important;
+}
+
+.p-toast-message-error {
+  background: #fef2f2 !important;
+  border-color: #ef4444 !important;
+  color: #991b1b !important;
+}
+
+.p-toast-message-error .p-toast-message-icon {
+  color: #ef4444 !important;
+}
+
+.p-toast-message-info {
+  background: #eff6ff !important;
+  border-color: #3b82f6 !important;
+  color: #1e40af !important;
+}
+
+.p-toast-message-info .p-toast-message-icon {
+  color: #3b82f6 !important;
+}
+
+.p-toast-message-warn {
+  background: #fef9c3 !important;
+  border-color: #eab308 !important;
+  color: #854d0e !important;
+}
+
+.p-toast-message-warn .p-toast-message-icon {
+  color: #eab308 !important;
+}
+
+/* ============================================
+   ESTILOS BASE PERSONALIZADOS
+   ============================================ */
+
+@layer base {
+  body {
+    @apply font-sans antialiased bg-gray-50 text-gray-900;
+  }
+  
+  h1 {
+    @apply text-3xl font-bold;
+  }
+  
+  h2 {
+    @apply text-2xl font-semibold;
+  }
+  
+  h3 {
+    @apply text-xl font-semibold;
+  }
+
+  /* Scrollbar personalizado */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}
+
+/* Componentes personalizados */
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 
+           transition-all duration-300 font-medium shadow-sm hover:shadow-md
+           transform hover:scale-105 active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 
+           transition-all duration-300 font-medium transform hover:scale-105 active:scale-95;
+  }
+  
+  .btn-success {
+    @apply px-4 py-2 bg-medical-600 text-white rounded-lg hover:bg-medical-700 
+           transition-all duration-300 font-medium shadow-sm hover:shadow-md
+           transform hover:scale-105 active:scale-95;
+  }
+  
+  .btn-danger {
+    @apply px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 
+           transition-all duration-300 font-medium shadow-sm hover:shadow-md
+           transform hover:scale-105 active:scale-95;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-md p-6 border border-gray-100
+           transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg 
+           focus:ring-2 focus:ring-primary-500 focus:border-primary-500 
+           transition-all duration-300 hover:border-primary-300;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .badge-pending {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+  
+  .badge-confirmed {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .badge-cancelled {
+    @apply bg-red-100 text-red-800;
+  }
+  
+  .badge-rejected {
+    @apply bg-gray-100 text-gray-800;
+  }
+}
+
+/* Animaciones personalizadas */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  .animate-slide-in {
+    animation: slideIn 0.4s ease-out forwards;
+  }
+  
+  .animate-slide-in-right {
+    animation: slideInRight 0.5s ease-out forwards;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  
+  .animate-bounce-in {
+    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes bounceIn {
+    0% {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+}
+
+/* Origin points para animaciones */
+.origin-top-right {
+  transform-origin: top right;
+}
+
+.origin-top {
+  transform-origin: top;
+}
+
+.origin-center {
+  transform-origin: center;
+}
+
+/* Efectos de backdrop blur mejorados */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.backdrop-blur-xl {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* Transiciones suaves globales */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Delays para animaciones secuenciales */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
