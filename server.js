@@ -28,9 +28,24 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rutas
-app.use('/api/medicos', require('./routes/medicos.routes')); // Primero este (tiene /info)
-app.use('/api/medicos', require('./routes/medico-perfil.routes')); // Después este
+// Rutas - Con logging para debugging
+console.log('📋 Cargando rutas...');
+try {
+  const medicosRoutes = require('./routes/medicos.routes');
+  console.log('✅ medicos.routes cargado correctamente');
+  app.use('/api/medicos', medicosRoutes);
+} catch (error) {
+  console.error('❌ ERROR al cargar medicos.routes:', error.message);
+}
+
+try {
+  const medicoPerfilRoutes = require('./routes/medico-perfil.routes');
+  console.log('✅ medico-perfil.routes cargado correctamente');
+  app.use('/api/medicos', medicoPerfilRoutes);
+} catch (error) {
+  console.error('❌ ERROR al cargar medico-perfil.routes:', error.message);
+}
+
 app.use('/api/pacientes', require('./routes/pacientes.routes'));
 app.use('/api/citas', require('./routes/citas.routes'));
 app.use('/api/horarios', require('./routes/horarios.routes'));
