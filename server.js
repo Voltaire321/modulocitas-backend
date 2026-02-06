@@ -29,8 +29,8 @@ app.use((req, res, next) => {
 });
 
 // Rutas
-app.use('/api/medicos', require('./routes/medico-perfil.routes'));
-app.use('/api/medicos', require('./routes/medicos.routes'));
+app.use('/api/medicos', require('./routes/medicos.routes')); // Primero este (tiene /info)
+app.use('/api/medicos', require('./routes/medico-perfil.routes')); // Después este
 app.use('/api/pacientes', require('./routes/pacientes.routes'));
 app.use('/api/citas', require('./routes/citas.routes'));
 app.use('/api/horarios', require('./routes/horarios.routes'));
@@ -52,6 +52,15 @@ app.get('/api/health', (req, res) => {
     status: 'ok', 
     message: 'Sistema de Citas Médicas API v1.0',
     timestamp: new Date().toISOString()
+  });
+});
+
+// Ruta de test
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API funcionando correctamente',
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV
   });
 });
 
