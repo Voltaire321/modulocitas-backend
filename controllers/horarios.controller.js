@@ -20,7 +20,16 @@ const getHorariosByMedico = async (req, res) => {
 // Crear horario
 const createHorario = async (req, res) => {
   try {
-    const { medico_id, dia_semana, hora_inicio, hora_fin, duracion_cita_minutos, tiempo_entre_citas_minutos } = req.body;
+    let { medico_id, dia_semana, hora_inicio, hora_fin, duracion_cita_minutos, tiempo_entre_citas_minutos } = req.body;
+
+    // Si no viene medico_id, obtener el médico activo
+    if (!medico_id) {
+      const [medicos] = await db.query('SELECT id FROM medicos WHERE activo = TRUE LIMIT 1');
+      if (medicos.length === 0) {
+        return res.status(404).json({ success: false, message: 'No hay médico configurado en el sistema' });
+      }
+      medico_id = medicos[0].id;
+    }
 
     const [result] = await db.query(
       'INSERT INTO configuracion_horarios (medico_id, dia_semana, hora_inicio, hora_fin, duracion_cita_minutos, tiempo_entre_citas_minutos) VALUES (?, ?, ?, ?, ?, ?)',

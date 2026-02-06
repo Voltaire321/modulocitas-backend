@@ -48,7 +48,7 @@ router.get('/perfil/:id', async (req, res) => {
     const [rows] = await connection.query(
       `SELECT 
         id, nombre, apellido, especialidad, email, telefono, 
-        cedula_profesional, avatar_url, whatsapp_connected, 
+        cedula_profesional, foto_url, whatsapp_connected, 
         google_calendar_connected, google_calendar_email, 
         configuracion_completada
       FROM medicos 
@@ -123,13 +123,13 @@ router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
     
     // Obtener avatar anterior para eliminarlo
     const [rows] = await connection.query(
-      'SELECT avatar_url FROM medicos WHERE id = ?',
+      'SELECT foto_url FROM medicos WHERE id = ?',
       [medicoId]
     );
     
-    if (rows.length > 0 && rows[0].avatar_url) {
+    if (rows.length > 0 && rows[0].foto_url) {
       // Eliminar avatar anterior
-      const oldPath = path.join(__dirname, '../..', rows[0].avatar_url);
+      const oldPath = path.join(__dirname, '../..', rows[0].foto_url);
       if (fs.existsSync(oldPath)) {
         fs.unlinkSync(oldPath);
       }
@@ -137,7 +137,7 @@ router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
     
     // Actualizar en base de datos
     await connection.query(
-      'UPDATE medicos SET avatar_url = ? WHERE id = ?',
+      'UPDATE medicos SET foto_url = ? WHERE id = ?',
       [avatarUrl, medicoId]
     );
     

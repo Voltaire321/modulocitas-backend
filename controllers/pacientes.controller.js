@@ -45,11 +45,9 @@ const getAllPacientes = async (req, res) => {
       SELECT 
         p.*,
         COUNT(DISTINCT c.id) as total_citas,
-        MAX(c.fecha) as ultima_cita,
-        GROUP_CONCAT(DISTINCT e.etiqueta) as etiquetas
+        MAX(c.fecha) as ultima_cita
       FROM pacientes p
       LEFT JOIN citas c ON p.id = c.paciente_id
-      LEFT JOIN etiquetas_paciente e ON p.id = e.paciente_id
       WHERE 1=1
     `;
     const params = [];
@@ -139,11 +137,12 @@ const getPacienteById = async (req, res) => {
       LIMIT 20
     `, [id]);
 
-    // Etiquetas
-    const [etiquetas] = await db.query(`
-      SELECT * FROM etiquetas_paciente
-      WHERE paciente_id = ?
-    `, [id]);
+    // Etiquetas - Funcionalidad deshabilitada (tabla no existe en schema base)
+    const etiquetas = [];
+    // const [etiquetas] = await db.query(`
+    //   SELECT * FROM etiquetas_paciente
+    //   WHERE paciente_id = ?
+    // `, [id]);
 
     // Signos vitales recientes
     const [signosVitales] = await db.query(`
@@ -387,6 +386,13 @@ const agregarNota = async (req, res) => {
 // Agregar/quitar etiqueta
 const gestionarEtiqueta = async (req, res) => {
   try {
+    // Funcionalidad deshabilitada - tabla etiquetas_paciente no existe en schema base
+    return res.status(501).json({
+      success: false,
+      message: 'Funcionalidad de etiquetas no disponible en esta versión'
+    });
+
+    /* Deshabilitado temporalmente
     const { paciente_id, etiqueta, color, accion } = req.body;
 
     if (accion === 'agregar') {
@@ -416,6 +422,7 @@ const gestionarEtiqueta = async (req, res) => {
         message: 'Acción no válida'
       });
     }
+    */
   } catch (error) {
     console.error('Error al gestionar etiqueta:', error);
     res.status(500).json({
