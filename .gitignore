@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.local
+.env.production
+*.log
+npm-debug.log*
+whatsapp-session/
+uploads/
+temp-produccion/
+*.html
+.DS_Store
+
+# Google OAuth credentials (configurar en Render como variables de entorno)
+config/google-token.json
+config/google-credentials.json
