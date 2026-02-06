@@ -4,7 +4,7 @@ const db = require('../config/database');
 const getMedicoInfo = async (req, res) => {
   try {
     const [medicos] = await db.query(
-      'SELECT id, nombre, apellido, especialidad, email, telefono, cedula_profesional, foto_url, avatar_url FROM medicos WHERE activo = TRUE LIMIT 1'
+      'SELECT id, nombre, apellido, especialidad, email, telefono, cedula_profesional, foto_url FROM medicos WHERE activo = TRUE LIMIT 1'
     );
 
     if (medicos.length === 0) {
