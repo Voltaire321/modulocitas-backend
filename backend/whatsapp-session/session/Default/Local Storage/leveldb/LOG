@@ -1,6 +1,0 @@
-2026/01/21-15:26:50.814 15d0 Reusing MANIFEST C:\Users\cesar\PracticasProfesionales\CitasWeb\modulocitas\backend\whatsapp-session\session\Default\Local Storage\leveldb/MANIFEST-000001
-2026/01/21-15:26:50.823 15d0 Recovering log #3
-2026/01/21-15:26:50.830 15d0 Reusing old log C:\Users\cesar\PracticasProfesionales\CitasWeb\modulocitas\backend\whatsapp-session\session\Default\Local Storage\leveldb/000003.log 
-2026/01/21-16:27:02.452 15d0 Level-0 table #5: started
-2026/01/21-16:27:02.598 15d0 Level-0 table #5: 18945 bytes OK
-2026/01/21-16:27:02.619 15d0 Delete type=0 #3

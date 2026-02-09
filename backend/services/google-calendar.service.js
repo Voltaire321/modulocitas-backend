@@ -12,27 +12,99 @@ class GoogleCalendarService {
     this.calendar = null;
   }
 
+  /**
+   * Lee las credenciales de Google desde archivo O desde variables de entorno.
+   * En producción (Render.com), se recomienda usar las variables de entorno:
+   *   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI
+   * O bien, GOOGLE_CREDENTIALS_JSON con el JSON completo.
+   */
+  _getCredentials() {
+    // Opción 1: Variables de entorno individuales
+    if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+      const redirectUri = process.env.GOOGLE_REDIRECT_URI 
+        || `${process.env.BACKEND_URL || 'http://localhost:3000'}/api/google-calendar/auth/callback`;
+      console.log('📋 Usando credenciales de Google desde variables de entorno');
+      return {
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uris: [redirectUri]
+      };
+    }
+
+    // Opción 2: Variable de entorno con JSON completo
+    if (process.env.GOOGLE_CREDENTIALS_JSON) {
+      try {
+        const parsed = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+        const creds = parsed.web || parsed.installed;
+        console.log('📋 Usando credenciales de Google desde GOOGLE_CREDENTIALS_JSON');
+        return creds;
+      } catch (e) {
+        console.error('❌ Error parseando GOOGLE_CREDENTIALS_JSON:', e.message);
+      }
+    }
+
+    // Opción 3: Archivo local
+    if (fs.existsSync(CREDENTIALS_PATH)) {
+      const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH, 'utf8'));
+      console.log('📋 Usando credenciales de Google desde archivo local');
+      return credentials.web || credentials.installed;
+    }
+
+    return null;
+  }
+
+  /**
+   * Lee el token guardado desde archivo O desde variable de entorno.
+   * En producción, usar GOOGLE_TOKEN_JSON con el JSON del token.
+   */
+  _getStoredToken() {
+    // Opción 1: Variable de entorno
+    if (process.env.GOOGLE_TOKEN_JSON) {
+      try {
+        return JSON.parse(process.env.GOOGLE_TOKEN_JSON);
+      } catch (e) {
+        console.error('❌ Error parseando GOOGLE_TOKEN_JSON:', e.message);
+      }
+    }
+
+    // Opción 2: Archivo local
+    if (fs.existsSync(TOKEN_PATH)) {
+      return JSON.parse(fs.readFileSync(TOKEN_PATH, 'utf8'));
+    }
+
+    return null;
+  }
+
   // Inicializar OAuth2 Client con las credenciales
   async initialize() {
     try {
-      // Leer credenciales del archivo
-      if (!fs.existsSync(CREDENTIALS_PATH)) {
-        console.log('⚠️  Archivo de credenciales no encontrado. Por favor configura google-credentials.json');
+      const creds = this._getCredentials();
+      
+      if (!creds) {
+        console.log('⚠️  Credenciales de Google no encontradas.');
+        console.log('   Opciones: archivo google-credentials.json O variables GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET');
         return false;
       }
 
-      const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH, 'utf8'));
-      const { client_id, client_secret, redirect_uris } = credentials.web || credentials.installed;
+      const { client_id, client_secret, redirect_uris } = creds;
+
+      // En producción, permitir override de redirect_uri
+      const redirectUri = process.env.GOOGLE_REDIRECT_URI || (redirect_uris && redirect_uris[0]);
+      
+      if (!redirectUri) {
+        console.log('⚠️  No se encontró redirect_uri para Google OAuth');
+        return false;
+      }
 
       this.oauth2Client = new google.auth.OAuth2(
         client_id,
         client_secret,
-        redirect_uris[0]
+        redirectUri
       );
 
       // Verificar si ya existe un token guardado
-      if (fs.existsSync(TOKEN_PATH)) {
-        const token = JSON.parse(fs.readFileSync(TOKEN_PATH, 'utf8'));
+      const token = this._getStoredToken();
+      if (token) {
         this.oauth2Client.setCredentials(token);
         this.calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
         console.log('✅ Google Calendar autenticado correctamente');

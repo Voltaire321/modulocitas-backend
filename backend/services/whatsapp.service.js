@@ -793,6 +793,55 @@ const desconectarWhatsApp = async () => {
   }
 };
 
+/**
+ * Reset completo de sesión (incluso si el cliente está corrupto)
+ */
+const resetSession = async () => {
+  console.log('🧹 Reseteando sesión de WhatsApp completamente...');
+  
+  try {
+    // Intentar desconectar cliente si existe
+    if (whatsappClient) {
+      try {
+        if (whatsappClient.pupBrowser) {
+          await whatsappClient.pupBrowser.close().catch(() => {});
+        }
+        await whatsappClient.destroy().catch(() => {});
+      } catch (e) {
+        console.log('⚠️ Error destruyendo cliente:', e.message);
+      }
+    }
+    
+    // Resetear variables
+    whatsappClient = null;
+    clientReady = false;
+    clientAuthenticated = false;
+    lastQR = null;
+    initializingLock = false;
+    initStartTime = null;
+    
+    // Eliminar carpetas de sesión
+    const sessionPath = path.join(__dirname, '../whatsapp-session');
+    const cachePath = path.join(__dirname, '../.wwebjs_cache');
+    
+    if (fs.existsSync(sessionPath)) {
+      fs.rmSync(sessionPath, { recursive: true, force: true });
+      console.log('✅ whatsapp-session eliminada');
+    }
+    
+    if (fs.existsSync(cachePath)) {
+      fs.rmSync(cachePath, { recursive: true, force: true });
+      console.log('✅ .wwebjs_cache eliminada');
+    }
+    
+    console.log('✅ Reset completo de WhatsApp - sesión limpia');
+    return true;
+  } catch (error) {
+    console.error('Error en reset de sesión:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   inicializarWhatsApp,
   enviarMensajeWhatsApp,
@@ -805,5 +854,6 @@ module.exports = {
   isInitializing: () => initializingLock,
   checkConnection,
   isSimulated: () => IS_SIMULATED,
-  desconectarWhatsApp
+  desconectarWhatsApp,
+  resetSession
 };

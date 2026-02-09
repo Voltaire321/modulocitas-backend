@@ -9,12 +9,16 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD || 'cesargoop',
   database: process.env.DB_NAME || 'listexa',
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 5,
   queueLimit: 0,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
+  keepAliveInitialDelay: 10000,
+  connectTimeout: 30000,
   timezone: '+00:00',
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  // Reconectar automáticamente en Hostinger
+  maxIdle: 3,
+  idleTimeout: 60000
 });
 
 // Verificar conexión al iniciar

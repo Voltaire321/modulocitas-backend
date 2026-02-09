@@ -48,7 +48,36 @@ router.get('/perfil/:id', async (req, res) => {
     const [rows] = await connection.query(
       `SELECT 
         id, nombre, apellido, especialidad, email, telefono, 
-        cedula_profesional, avatar_url, whatsapp_connected, 
+        cedula_profesional, foto_url, whatsapp_connected, 
+        google_calendar_connected, google_calendar_email, 
+        configuracion_completada
+      FROM medicos 
+      WHERE id = ?`,
+      [id]
+    );
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Médico no encontrado' });
+    }
+    
+    res.json({ success: true, data: rows[0] });
+  } catch (error) {
+    console.error('Error obteniendo perfil:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener perfil' });
+  }
+});
+
+// ============================================
+// Alias para /:id/perfil (compatibilidad frontend)
+// ============================================
+router.get('/:id/perfil', async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const [rows] = await connection.query(
+      `SELECT 
+        id, nombre, apellido, especialidad, email, telefono, 
+        cedula_profesional, foto_url, whatsapp_connected, 
         google_calendar_connected, google_calendar_email, 
         configuracion_completada
       FROM medicos 
@@ -123,13 +152,13 @@ router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
     
     // Obtener avatar anterior para eliminarlo
     const [rows] = await connection.query(
-      'SELECT avatar_url FROM medicos WHERE id = ?',
+      'SELECT foto_url FROM medicos WHERE id = ?',
       [medicoId]
     );
     
-    if (rows.length > 0 && rows[0].avatar_url) {
+    if (rows.length > 0 && rows[0].foto_url) {
       // Eliminar avatar anterior
-      const oldPath = path.join(__dirname, '../..', rows[0].avatar_url);
+      const oldPath = path.join(__dirname, '../..', rows[0].foto_url);
       if (fs.existsSync(oldPath)) {
         fs.unlinkSync(oldPath);
       }
@@ -137,7 +166,7 @@ router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
     
     // Actualizar en base de datos
     await connection.query(
-      'UPDATE medicos SET avatar_url = ? WHERE id = ?',
+      'UPDATE medicos SET foto_url = ? WHERE id = ?',
       [avatarUrl, medicoId]
     );
     
@@ -151,17 +180,25 @@ router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
 // ============================================
 // WhatsApp - Conectar y generar QR
 // ============================================
+// El lock de inicialización está en whatsapp.service.js (initializingLock)
+
 router.get('/:id/whatsapp/connect', async (req, res) => {
   const { id } = req.params;
   
   try {
     const whatsappService = require('../services/whatsapp.service');
     
-    // Verificar si ya está conectado
-    const state = await whatsappService.getState();
+    // Si está en modo simulado, informar al frontend sin intentar nada
+    if (whatsappService.isSimulated()) {
+      return res.json({ 
+        success: true, 
+        status: 'simulated',
+        message: 'WhatsApp en modo simulado (no disponible en este entorno)'
+      });
+    }
     
-    if (state === 'CONNECTED') {
-      // Ya está conectado
+    // Verificar si ya está conectado
+    if (whatsappService.isReady()) {
       await connection.query(
         'UPDATE medicos SET whatsapp_connected = TRUE WHERE id = ?',
         [id]
@@ -169,28 +206,80 @@ router.get('/:id/whatsapp/connect', async (req, res) => {
       return res.json({ success: true, status: 'connected' });
     }
     
-    // Si no está conectado, asegurar que se inicialice
-    if (state === 'NOT_INITIALIZED' || state === 'DISCONNECTED') {
-      whatsappService.inicializarWhatsApp();
-      // Esperar un momento para que se genere el QR
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-    
-    // Obtener el último QR generado
-    const qr = whatsappService.getLastQR();
-    
-    if (qr) {
-      return res.json({ success: true, qr });
-    } else {
-      // Si no hay QR, el cliente está inicializándose
+    // Si ya está inicializando, NO lanzar otra inicialización
+    if (whatsappService.isInitializing()) {
+      console.log('⏳ WhatsApp ya se está inicializando, esperando...');
+      const qr = whatsappService.getLastQR();
+      if (qr) {
+        return res.json({ success: true, qr });
+      }
       return res.json({ 
         success: true, 
-        message: 'Inicializando WhatsApp, el QR aparecerá en breve...',
+        message: 'WhatsApp inicializándose, esperando QR...',
         status: 'initializing'
       });
     }
+    
+    // Iniciar WhatsApp (primera vez o después de que el lock se liberó)
+    console.log('🔄 Iniciando WhatsApp desde /connect...');
+    whatsappService.inicializarWhatsApp();
+    
+    return res.json({ 
+      success: true, 
+      message: 'Inicializando WhatsApp, el QR aparecerá en breve...',
+      status: 'initializing'
+    });
   } catch (error) {
     console.error('Error conectando WhatsApp:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ============================================
+// WhatsApp - Obtener QR actual (polling ligero)
+// ============================================
+router.get('/:id/whatsapp/qr', async (req, res) => {
+  try {
+    const whatsappService = require('../services/whatsapp.service');
+    
+    if (whatsappService.isSimulated()) {
+      return res.json({ success: true, status: 'simulated' });
+    }
+    
+    // Verificar conexión con fallback a getState()
+    const connected = await whatsappService.checkConnection();
+    if (connected) {
+      const { id } = req.params;
+      await connection.query(
+        'UPDATE medicos SET whatsapp_connected = TRUE WHERE id = ?',
+        [id]
+      );
+      return res.json({ success: true, status: 'connected' });
+    }
+    
+    // Si está autenticado (QR escaneado) pero no ready aún
+    if (whatsappService.isAuthenticated()) {
+      return res.json({ success: true, status: 'authenticated' });
+    }
+    
+    // Si está inicializando, solo esperar (NO retornar timeout)
+    if (whatsappService.isInitializing()) {
+      const qr = whatsappService.getLastQR();
+      if (qr) {
+        return res.json({ success: true, qr });
+      }
+      return res.json({ success: true, status: 'waiting' });
+    }
+    
+    // Si NO está inicializando y NO está conectado → el init falló
+    // Retornar timeout para que el frontend pueda reintentar
+    const qr = whatsappService.getLastQR();
+    if (qr) {
+      return res.json({ success: true, qr });
+    }
+    return res.json({ success: true, status: 'timeout' });
+  } catch (error) {
+    console.error('Error obteniendo QR:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
@@ -203,6 +292,17 @@ router.get('/:id/whatsapp/status', async (req, res) => {
   
   try {
     const whatsappService = require('../services/whatsapp.service');
+    
+    // Si está en modo simulado, reportar desconectado sin error
+    if (whatsappService.isSimulated()) {
+      return res.json({ 
+        success: true, 
+        connected: false,
+        simulated: true,
+        message: 'WhatsApp en modo simulado'
+      });
+    }
+    
     const isConnected = whatsappService.isReady();
     
     if (isConnected) {
@@ -224,6 +324,44 @@ router.get('/:id/whatsapp/status', async (req, res) => {
 });
 
 // ============================================
+// WhatsApp - Reset completo de sesión
+// ============================================
+router.post('/:id/whatsapp/reset-session', async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const whatsappService = require('../services/whatsapp.service');
+    
+    if (whatsappService.isSimulated()) {
+      return res.json({ 
+        success: true, 
+        message: 'WhatsApp en modo simulado (sin sesión que resetear)'
+      });
+    }
+    
+    // Reset completo
+    await whatsappService.resetSession();
+    
+    // Actualizar BD
+    await connection.query(
+      'UPDATE medicos SET whatsapp_connected = FALSE, whatsapp_session_id = NULL WHERE id = ?',
+      [id]
+    );
+    
+    res.json({ 
+      success: true, 
+      message: 'Sesión de WhatsApp reseteada completamente. Puedes reconectar ahora.'
+    });
+  } catch (error) {
+    console.error('Error reseteando sesión WhatsApp:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al resetear sesión: ' + error.message 
+    });
+  }
+});
+
+// ============================================
 // WhatsApp - Desconectar
 // ============================================
 router.post('/:id/whatsapp/disconnect', async (req, res) => {
@@ -232,7 +370,13 @@ router.post('/:id/whatsapp/disconnect', async (req, res) => {
   try {
     const whatsappService = require('../services/whatsapp.service');
     
+    // Si está en modo simulado, simplemente confirmar
+    if (whatsappService.isSimulated()) {
+      return res.json({ success: true, message: 'WhatsApp no estaba conectado (modo simulado)' });
+    }
+    
     // Desconectar y eliminar sesión
+    whatsappInitializing = false;
     await whatsappService.desconectarWhatsApp();
     
     // Actualizar base de datos
@@ -255,16 +399,32 @@ router.get('/:id/google-calendar/auth', async (req, res) => {
   const { id } = req.params;
   
   try {
-    await googleCalendarService.initialize();
-    const authUrl = googleCalendarService.getAuthUrl();
+    const initialized = await googleCalendarService.initialize();
     
-    // Guardar estado para callback
-    // TODO: Implementar estado por médico
+    // Si ya está autenticado (tiene token), informar al frontend
+    if (initialized && googleCalendarService.isAuthenticated()) {
+      return res.json({ 
+        success: true, 
+        authenticated: true, 
+        message: 'Google Calendar ya está conectado' 
+      });
+    }
+    
+    // Si initialize falló (sin credenciales), oauth2Client será null
+    if (!googleCalendarService.oauth2Client) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Google Calendar no configurado. Configure las variables de entorno GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Render.',
+        requiresSetup: true
+      });
+    }
+    
+    const authUrl = googleCalendarService.getAuthUrl();
     
     res.json({ success: true, authUrl });
   } catch (error) {
     console.error('Error obteniendo URL de auth:', error);
-    res.status(500).json({ success: false, message: 'Error al generar URL' });
+    res.status(400).json({ success: false, message: 'Google Calendar no configurado: ' + error.message, requiresSetup: true });
   }
 });
 

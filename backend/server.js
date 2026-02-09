@@ -41,6 +41,10 @@ app.use('/api/recetas', require('./routes/recetas.routes'));
 app.use('/api/notificaciones', require('./routes/notificaciones.routes'));
 app.use('/api/google-calendar', require('./routes/google-calendar.routes'));
 app.use('/api/verificacion', require('./routes/verificacion.routes'));
+app.use('/api/configuracion-consultorio', require('./routes/configuracion-consultorio.routes'));
+app.use('/api/webmail', require('./routes/webmail.routes'));
+app.use('/api/email', require('./routes/email.routes'));
+app.use('/api/branding', require('./routes/branding.routes'));
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {
@@ -76,10 +80,16 @@ app.listen(PORT, () => {
   console.log(`🏥 Entorno: ${process.env.NODE_ENV}`);
   
   // Inicializar WhatsApp Web de forma asíncrona (no bloquea el servidor)
+  // Ahora con detección automática de modo simulado en producción
   setTimeout(() => {
     try {
-      console.log('\n📱 Inicializando WhatsApp Web...');
-      inicializarWhatsApp();
+      const whatsappService = require('./services/whatsapp.service');
+      if (whatsappService.isSimulated()) {
+        console.log('\n📱 WhatsApp en modo simulado (producción sin Chrome)');
+      } else {
+        console.log('\n📱 Inicializando WhatsApp Web...');
+        inicializarWhatsApp();
+      }
     } catch (error) {
       console.error('⚠️ Error al inicializar WhatsApp (modo simulado disponible):', error.message);
     }

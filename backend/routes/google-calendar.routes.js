@@ -20,7 +20,15 @@ router.get('/auth/status', async (req, res) => {
 // Obtener URL de autenticación de Google
 router.get('/auth/url', async (req, res) => {
   try {
-    await googleCalendarService.initialize();
+    const initialized = await googleCalendarService.initialize();
+    
+    // Si oauth2Client no se creó, faltan credenciales
+    if (!googleCalendarService.oauth2Client) {
+      return res.status(400).json({ 
+        error: 'Google Calendar no configurado. Faltan credenciales.' 
+      });
+    }
+    
     const authUrl = googleCalendarService.getAuthUrl();
     res.json({ authUrl });
   } catch (error) {
