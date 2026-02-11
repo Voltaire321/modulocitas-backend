@@ -103,11 +103,14 @@ passport.use(new FacebookStrategy({
       }
 
       // Crear nuevo usuario
+      // Generar username único desde el email
+      const username = email.split('@')[0] + '_' + Date.now().toString().slice(-6);
+      
       const [result] = await db.query(
         `INSERT INTO usuarios_admin 
-         (email, nombre, oauth_provider, oauth_id, oauth_access_token, oauth_refresh_token, oauth_picture, oauth_created_at, oauth_updated_at, rol) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)`,
-        [email, displayName, 'facebook', facebookId, accessToken, refreshToken, picture, 'doctor']
+         (username, email, nombre, oauth_provider, oauth_id, oauth_access_token, oauth_refresh_token, oauth_picture, oauth_created_at, oauth_updated_at, rol) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)`,
+        [username, email, displayName, 'facebook', facebookId, accessToken, refreshToken, picture, 'doctor']
       );
 
       const [newUser] = await db.query(
@@ -200,11 +203,14 @@ passport.use(new GoogleStrategy({
       }
 
       // Crear nuevo usuario
+      // Generar username único desde el email
+      const username = email.split('@')[0] + '_' + Date.now().toString().slice(-6);
+      
       const [result] = await db.query(
         `INSERT INTO usuarios_admin 
-         (email, nombre, oauth_provider, oauth_id, oauth_access_token, oauth_refresh_token, oauth_picture, oauth_created_at, oauth_updated_at, rol) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)`,
-        [email, displayName, 'google', googleId, accessToken, refreshToken, picture, 'doctor']
+         (username, email, nombre, oauth_provider, oauth_id, oauth_access_token, oauth_refresh_token, oauth_picture, oauth_created_at, oauth_updated_at, rol) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)`,
+        [username, email, displayName, 'google', googleId, accessToken, refreshToken, picture, 'doctor']
       );
 
       const [newUser] = await db.query(
