@@ -7,6 +7,8 @@ require('dotenv').config();
 const { inicializarWhatsApp } = require('./services/whatsapp.service');
 // Importar servicio de Google Calendar
 const googleCalendarService = require('./services/google-calendar.service');
+// Importar configuración de Passport para OAuth
+const passport = require('./config/passport.config');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +20,9 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Inicializar Passport para OAuth
+app.use(passport.initialize());
 
 // Servir archivos estáticos (avatares)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -35,6 +40,7 @@ app.use('/api/pacientes', require('./routes/pacientes.routes'));
 app.use('/api/citas', require('./routes/citas.routes'));
 app.use('/api/horarios', require('./routes/horarios.routes'));
 app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/auth', require('./routes/oauth.routes')); // Rutas OAuth (Facebook y Google)
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/disponibilidad', require('./routes/disponibilidad.routes'));
 app.use('/api/recetas', require('./routes/recetas.routes'));
@@ -45,6 +51,7 @@ app.use('/api/configuracion-consultorio', require('./routes/configuracion-consul
 app.use('/api/webmail', require('./routes/webmail.routes'));
 app.use('/api/email', require('./routes/email.routes'));
 app.use('/api/branding', require('./routes/branding.routes'));
+app.use('/api/restaurantes', require('./routes/restaurantes'));
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {
