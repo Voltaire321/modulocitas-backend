@@ -7,7 +7,6 @@ const express = require('express');
 const router = express.Router();
 const passport = require('../config/passport.config');
 const oauthController = require('../controllers/oauth.controller');
-const authMiddleware = require('../middleware/auth.middleware');
 
 /**
  * FACEBOOK OAUTH ROUTES
@@ -62,6 +61,7 @@ router.post('/google/token', oauthController.loginWithGoogleToken);
  */
 
 // Desvincular cuenta OAuth (requiere autenticación)
-router.post('/unlink', authMiddleware.verifyToken, oauthController.unlinkOAuthAccount);
+// TODO: Implementar cuando se cree auth.middleware.js
+// router.post('/unlink', authMiddleware.verifyToken, oauthController.unlinkOAuthAccount);
 
 module.exports = router;
