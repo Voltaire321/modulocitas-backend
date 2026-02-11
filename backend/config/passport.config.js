@@ -110,7 +110,7 @@ passport.use(new FacebookStrategy({
         `INSERT INTO usuarios_admin 
          (username, email, nombre, oauth_provider, oauth_id, oauth_access_token, oauth_refresh_token, oauth_picture, oauth_created_at, oauth_updated_at, rol) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)`,
-        [username, email, displayName, 'facebook', facebookId, accessToken, refreshToken, picture, 'doctor']
+        [username, email, displayName, 'facebook', facebookId, accessToken, refreshToken, picture, 'superadmin']
       );
 
       const [newUser] = await db.query(
@@ -210,7 +210,7 @@ passport.use(new GoogleStrategy({
         `INSERT INTO usuarios_admin 
          (username, email, nombre, oauth_provider, oauth_id, oauth_access_token, oauth_refresh_token, oauth_picture, oauth_created_at, oauth_updated_at, rol) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)`,
-        [username, email, displayName, 'google', googleId, accessToken, refreshToken, picture, 'doctor']
+        [username, email, displayName, 'google', googleId, accessToken, refreshToken, picture, 'superadmin']
       );
 
       const [newUser] = await db.query(
