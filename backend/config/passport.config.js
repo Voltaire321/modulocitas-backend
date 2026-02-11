@@ -70,7 +70,13 @@ passport.use(new FacebookStrategy({
           [accessToken, refreshToken, picture, existingOAuthUser[0].id]
         );
         
-        return done(null, existingOAuthUser[0]);
+        // Obtener datos ACTUALIZADOS del usuario (incluyendo rol actual)
+        const [updatedUser] = await db.query(
+          'SELECT * FROM usuarios_admin WHERE id = ?',
+          [existingOAuthUser[0].id]
+        );
+        
+        return done(null, updatedUser[0]);
       }
 
       // Verificar si existe usuario con el mismo email (vincular cuentas)
@@ -170,7 +176,13 @@ passport.use(new GoogleStrategy({
           [accessToken, refreshToken, picture, existingOAuthUser[0].id]
         );
         
-        return done(null, existingOAuthUser[0]);
+        // Obtener datos ACTUALIZADOS del usuario (incluyendo rol actual)
+        const [updatedUser] = await db.query(
+          'SELECT * FROM usuarios_admin WHERE id = ?',
+          [existingOAuthUser[0].id]
+        );
+        
+        return done(null, updatedUser[0]);
       }
 
       // Verificar si existe usuario con el mismo email (vincular cuentas)
