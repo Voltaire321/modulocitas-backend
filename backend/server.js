@@ -51,7 +51,7 @@ app.use('/api/configuracion-consultorio', require('./routes/configuracion-consul
 app.use('/api/webmail', require('./routes/webmail.routes'));
 app.use('/api/email', require('./routes/email.routes'));
 app.use('/api/branding', require('./routes/branding.routes'));
-app.use('/api/restaurantes', require('./routes/restaurantes'));
+// app.use('/api/restaurantes', require('./routes/restaurantes')); // TODO: Agregar al repo cuando se necesite
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {
